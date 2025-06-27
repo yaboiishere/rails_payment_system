@@ -1,0 +1,7 @@
+tr
+  td = tx.uuid
+  td = tx.type
+  td = tx.amount || 'N/A'
+  td.badge class=("bg-#{status_badge_class(tx.status)}") = tx.status
+  td = tx.customer_email
+  td = tx.parent_transaction ? tx.parent_transaction.uuid : '-'

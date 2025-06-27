@@ -1,0 +1,15 @@
+- if merchant.transactions.any?
+  table.table.table-sm.table-striped
+    thead
+      tr
+        th Transaction UUID
+        th Type
+        th Amount
+        th Status
+        th Customer Email
+        th Parent
+    tbody
+      - merchant.transactions.each do |tx|
+        = render partial: "transaction/row", locals: { tx: tx }
+- else
+  p.text-muted No transactions for this merchant.

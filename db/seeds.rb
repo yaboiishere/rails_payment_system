@@ -7,3 +7,11 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+%w[Alice Bob Charlie].each do |name|
+  User::Merchant.create!(name: name, description: Faker::Lorem.sentence, email: Faker::Internet.email, status: :active).save!
+end
+
+User::Admin.create!(name: "Admin", description: "Administrator", email: "admin@payment.com", status: :active)
+
+User::Merchant.create!(name: "Inactive User", description: "Inactive user", email: "inactive@lol.com", status: :inactive)

@@ -1,0 +1,19 @@
+.container.mt-5
+  .row
+    .col-md-8.offset-md-2
+      h2.mb-3 = @user.name
+      ul.list-group
+        li.list-group-item
+          strong Email:
+          |  #{@user.email}
+        li.list-group-item
+          strong Status:
+          span.badge class=(@user.active? ? "bg-success" : "bg-secondary") = @user.status
+        li.list-group-item
+          strong Role:
+          |  #{@user.type || 'User'}
+        li.list-group-item
+          strong Description:
+          |  #{@user.description || 'No description provided.'}
+
+      = link_to "Back to Users", user_index_path, class: "btn btn-outline-primary mt-3"

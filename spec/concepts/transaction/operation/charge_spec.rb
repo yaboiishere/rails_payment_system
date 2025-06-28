@@ -129,7 +129,7 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
   context "when transaction fails to save" do
     it "returns validation errors" do
       allow_any_instance_of(Transaction::Charge).to receive(:save).and_return(false)
-      allow_any_instance_of(Transaction::Charge).to receive_message_chain(:errors, :full_messages).and_return(["Some error"])
+      allow_any_instance_of(Transaction::Charge).to receive_message_chain(:errors, :full_messages).and_return([ "Some error" ])
 
       result = described_class.call(merchant: merchant, params: valid_params)
 

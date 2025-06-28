@@ -29,4 +29,11 @@ RSpec.describe Transaction, type: :model do
   it 'belongs to a user of type Merchant' do
     expect(transaction.merchant).to be_a(User::Merchant)
   end
+
+  %w[approved reversed refunded error].each do |status|
+    it "has a method to check if status is #{status}" do
+      transaction.status = status
+      expect(transaction.send("is_#{status}?")).to be true
+    end
+  end
 end

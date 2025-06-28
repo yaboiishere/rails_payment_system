@@ -13,6 +13,12 @@ class Transaction < ApplicationRecord
 
   before_validation :generate_uuid, on: :create
 
+  statuses.each do |status, _|
+    define_method("is_#{status}?") do
+      self.status == status.to_s
+    end
+  end
+
   private
 
   def generate_uuid

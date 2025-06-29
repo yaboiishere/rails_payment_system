@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  scope :api do
+    scope :v1 do
+      resources :api_session, only: [ :create, :index ]
+    end
+  end
   resource :session
   resources :passwords, param: :token
   resources :user, only: [ :index, :show ]

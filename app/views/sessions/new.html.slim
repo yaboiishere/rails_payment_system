@@ -1,12 +1,19 @@
-= tag.div(flash[:alert], style: "color:red") if flash[:alert]
-= tag.div(flash[:notice], style: "color:green") if flash[:notice]
+.container.mt-5
+  .row.justify-content-center
+    .col-md-6
+      h2.mb-4.text-center Login
 
-= form_with url: session_path do |form|
-  = form.email_field :email, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email]
-  br
-  = form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72
-  br
-  = form.submit "Sign in"
-br
+      = form_with url: session_path, method: :post, local: true do |f|
+        .mb-3
+          = f.label :email, class: "form-label"
+          = f.email_field :email, class: "form-control", required: true
 
-= link_to "Forgot password?", new_password_path
+        .mb-3
+          = f.label :password, class: "form-label"
+          = f.password_field :password, class: "form-control", required: true
+
+        .d-grid
+          = f.submit "Log In", class: "btn btn-primary"
+
+      - if flash[:alert]
+        .alert.alert-danger.mt-3= flash[:alert]

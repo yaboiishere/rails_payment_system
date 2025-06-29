@@ -4,30 +4,18 @@ FactoryBot.define do
     description { Faker::Lorem.sentence }
     email { Faker::Internet.email }
     status { Faker::Number.between(from: 0, to: 2) ? :active : :inactive }
+    password { 'password' }
   end
 
-  factory :merchant, class: 'User::Merchant' do
-    name { Faker::Name.name }
-    description { Faker::Lorem.sentence }
-    email { Faker::Internet.email }
-    status { Faker::Number.between(from: 0, to: 2) ? :active : :inactive }
-    total_transaction_sum { 0.0 }
+  factory :merchant, class: 'User::Merchant', parent: :user do
   end
 
-  factory(:active_merchant, class: 'User::Merchant') do
-    name { Faker::Name.name }
-    description { Faker::Lorem.sentence }
-    email { Faker::Internet.email }
+  factory(:active_merchant, class: 'User::Merchant', parent: :user) do
     status { :active }
-    total_transaction_sum { 0.0 }
   end
 
-  factory(:inactive_merchant, class: 'User::Merchant') do
-    name { Faker::Name.name }
-    description { Faker::Lorem.sentence }
-    email { Faker::Internet.email }
+  factory(:inactive_merchant, class: 'User::Merchant', parent: :user) do
     status { :inactive }
-    total_transaction_sum { 0.0 }
   end
 
   factory(:admin, class: 'User::Admin') do
@@ -35,5 +23,6 @@ FactoryBot.define do
     description { "Administrator" }
     email { "admin@payment.com" }
     status { :active }
+    password { 'password' }
   end
 end

@@ -184,11 +184,9 @@ RSpec.describe Transaction::Operation::Reversal, type: :operation do
 
       expect(result).not_to be_success
 
-      tx = result[:transaction]
-      expect(tx).to be_persisted
-      expect(tx.status).to eq("error")
-      expect(tx.error_message).to include("Merchant is not active")
-      expect(authorize_transaction.reload.status).to eq("approved")
+      expect(result[:transaction]).to be_nil
+      expect(result[:errors]).to include("Merchant is not active")
+      expect(result.terminus.to_h[:semantic]).to eq(:merchant_not_found)
     end
 
     it "persists transaction when parent is invalid" do

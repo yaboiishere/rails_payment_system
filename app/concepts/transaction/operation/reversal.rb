@@ -5,7 +5,7 @@ module Transaction::Operation
     include Transaction::Operation::Shared
 
     step ->(ctx, **) { ctx[:tx_type] = Transaction::Reversal }
-    step :validate_merchant
+    step :validate_merchant, Output(:failure) => End(:merchant_not_found)
     step :validate_customer
     step :validate_amount
     step :set_parent_transaction

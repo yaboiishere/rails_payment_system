@@ -183,16 +183,18 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
       expect(result[:model]).to be_nil
     end
 
-    it "persists transaction when merchant is inactive" do
+    it "doesn't persist transaction when merchant is inactive" do
       merchant.update!(status: :inactive)
 
       result = described_class.call(merchant: merchant, params: valid_params)
 
       expect(result).not_to be_success
-      expect(result[:transaction]).to be_persisted
-      expect(result[:transaction].uuid).not_to be_nil
-      expect(result[:transaction].status).to eq("error")
-      expect(result[:transaction].error_message).to include("Merchant is not active")
+      expect(result[:transaction]).to be_nil
+      expect(result[:errors]).to include("Merchant is not active")
+      expect(result.terminus.to_h[:semantic]).to eq(:merchant_not_found)
+
+      expect(authorize_transaction.reload.status).to eq("approved")
+      expect(merchant.reload.total_transaction_sum).to eq(0)
     end
 
     it "persists transaction when parent transaction is invalid" do

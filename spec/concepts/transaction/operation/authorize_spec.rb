@@ -142,15 +142,15 @@ RSpec.describe Transaction::Operation::Authorize, type: :operation do
       expect(result[:transaction].merchant).to eq(merchant)
     end
 
-    it "persists transaction even if merchant is inactive" do
+    it "doesn't persist transaction if merchant is inactive" do
       merchant.update!(status: :inactive)
 
       result = described_class.call(merchant: merchant, params: valid_params)
 
       expect(result).not_to be_success
-      expect(result[:transaction]).to be_persisted
-      expect(result[:transaction].status).to eq("error")
-      expect(result[:transaction].error_message).to include("Merchant is not active")
+      expect(result[:transaction]).to be_nil
+      expect(result[:errors]).to include("Merchant is not active")
+      expect(result.terminus.to_h[:semantic]).to eq(:merchant_not_found)
     end
   end
 end

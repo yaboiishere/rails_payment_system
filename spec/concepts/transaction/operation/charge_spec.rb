@@ -167,4 +167,46 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
       expect(result[:errors]).to include("Some error")
     end
   end
+
+  context "when input is invalid, transaction is still persisted with error status" do
+    it "persists transaction with status error and error message on invalid amount" do
+      result = described_class.call(
+        merchant: merchant,
+        params: valid_params.merge(amount: -50)
+      )
+
+      expect(result).not_to be_success
+      expect(result[:transaction]).to be_persisted
+      expect(result[:transaction].uuid).not_to be_nil
+      expect(result[:transaction].status).to eq("error")
+      expect(result[:transaction].error_message).to include("Amount must be greater than zero")
+      expect(result[:model]).to be_nil
+    end
+
+    it "persists transaction when merchant is inactive" do
+      merchant.update!(status: :inactive)
+
+      result = described_class.call(merchant: merchant, params: valid_params)
+
+      expect(result).not_to be_success
+      expect(result[:transaction]).to be_persisted
+      expect(result[:transaction].uuid).not_to be_nil
+      expect(result[:transaction].status).to eq("error")
+      expect(result[:transaction].error_message).to include("Merchant is not active")
+    end
+
+    it "persists transaction when parent transaction is invalid" do
+      refund = create(:refund_transaction)
+      result = described_class.call(
+        merchant: merchant,
+        params: valid_params.merge(parent_transaction_uuid: refund.uuid)
+      )
+
+      expect(result).not_to be_success
+      expect(result[:transaction]).to be_persisted
+      expect(result[:transaction].uuid).not_to be_nil
+      expect(result[:transaction].status).to eq("error")
+      expect(result[:transaction].error_message).to include("Parent transaction must be an authorize transaction").or include("Parent transaction must be approved")
+    end
+  end
 end

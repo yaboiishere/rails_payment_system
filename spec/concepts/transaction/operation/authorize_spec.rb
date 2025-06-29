@@ -127,4 +127,30 @@ RSpec.describe Transaction::Operation::Authorize, type: :operation do
       expect(result[:model].parent_transaction).to be_nil
     end
   end
+
+  context "when input is invalid, transaction is still persisted with error status" do
+    it "persists transaction with status error and error message" do
+      result = described_class.call(
+        merchant: merchant,
+        params: valid_params.merge(customer_email: "", amount: -10)
+      )
+
+      expect(result).not_to be_success
+      expect(result[:transaction]).to be_persisted
+      expect(result[:transaction].status).to eq("error")
+      expect(result[:transaction].error_message).to include("Customer email and phone are required").or include("Amount must be greater than zero")
+      expect(result[:transaction].merchant).to eq(merchant)
+    end
+
+    it "persists transaction even if merchant is inactive" do
+      merchant.update!(status: :inactive)
+
+      result = described_class.call(merchant: merchant, params: valid_params)
+
+      expect(result).not_to be_success
+      expect(result[:transaction]).to be_persisted
+      expect(result[:transaction].status).to eq("error")
+      expect(result[:transaction].error_message).to include("Merchant is not active")
+    end
+  end
 end

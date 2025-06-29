@@ -160,4 +160,64 @@ RSpec.describe Transaction::Operation::Reversal, type: :operation do
       expect(result[:errors]).to include("Failed to update parent transaction status")
     end
   end
+
+  context "when input is invalid, transaction is persisted with error status" do
+    it "persists transaction with status error and message on invalid amount" do
+      result = described_class.call(
+        merchant: merchant,
+        params: valid_params.merge(amount: 123)
+      )
+
+      expect(result).not_to be_success
+
+      tx = result[:transaction]
+      expect(tx).to be_persisted
+      expect(tx.status).to eq("error")
+      expect(tx.error_message).to include("Amount must be nil for reversal transactions")
+      expect(authorize_transaction.reload.status).to eq("approved")
+    end
+
+    it "persists transaction when merchant is inactive" do
+      merchant.update!(status: :inactive)
+
+      result = described_class.call(merchant: merchant, params: valid_params)
+
+      expect(result).not_to be_success
+
+      tx = result[:transaction]
+      expect(tx).to be_persisted
+      expect(tx.status).to eq("error")
+      expect(tx.error_message).to include("Merchant is not active")
+      expect(authorize_transaction.reload.status).to eq("approved")
+    end
+
+    it "persists transaction when parent is invalid" do
+      refund = create(:refund_transaction)
+      result = described_class.call(
+        merchant: merchant,
+        params: valid_params.merge(parent_transaction_uuid: refund.uuid)
+      )
+
+      expect(result).not_to be_success
+
+      tx = result[:transaction]
+      expect(tx).to be_persisted
+      expect(tx.status).to eq("error")
+      expect(tx.error_message).to include("Parent transaction must be an authorize transaction")
+    end
+
+    it "persists transaction with invalid customer data" do
+      result = described_class.call(
+        merchant: merchant,
+        params: valid_params.merge(customer_email: "", customer_phone: "")
+      )
+
+      expect(result).not_to be_success
+
+      tx = result[:transaction]
+      expect(tx).to be_persisted
+      expect(tx.status).to eq("error")
+      expect(tx.error_message).to include("Customer email and phone are required")
+    end
+  end
 end

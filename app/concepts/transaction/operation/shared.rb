@@ -77,4 +77,24 @@ module Transaction::Operation::Shared
       false
     end
   end
+
+  def persist_failed_transaction(ctx, merchant:, params:, **)
+    type = ctx[:tx_type]
+    error_text = ctx[:errors]&.join(", ")
+
+    transaction = type.create(
+      merchant: merchant,
+      parent_transaction: ctx[:parent_transaction],
+      amount: params[:amount],
+      status: "error",
+      customer_email: params[:customer_email],
+      customer_phone: params[:customer_phone],
+      error_message: error_text
+    )
+
+    transaction.save(validate: false)
+
+    ctx[:transaction] = transaction
+    false
+  end
 end

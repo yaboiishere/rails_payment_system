@@ -4,10 +4,14 @@ module Transaction::Operation
   class Authorize < Trailblazer::Operation
     include Transaction::Operation::Shared
 
+    step ->(ctx, **) { ctx[:tx_type] = Transaction::Authorize }
     step :validate_merchant
     step :validate_customer
     step :validate_amount
     step :validate_no_parent_transaction
+
+    fail :persist_failed_transaction
+
     step :build_model
     step :persist
 

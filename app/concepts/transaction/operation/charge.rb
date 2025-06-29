@@ -4,12 +4,16 @@ module Transaction::Operation
   class Charge < Trailblazer::Operation
     include Transaction::Operation::Shared
 
+    step ->(ctx, **) { ctx[:tx_type] = Transaction::Charge }
     step :validate_merchant
     step :validate_customer
     step :validate_amount
     step :set_parent_transaction
     step :is_parent_approved?
     step :validate_parent_transaction
+
+    fail :persist_failed_transaction
+
     step :build_model
     step :persist
     step :update_merchant_total
@@ -38,6 +42,7 @@ module Transaction::Operation
         end
       else
         ctx[:errors] << "Parent transaction must be an authorize transaction"
+        ctx[:parent_transaction] = nil
         false
       end
     end

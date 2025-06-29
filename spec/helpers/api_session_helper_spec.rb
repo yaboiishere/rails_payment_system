@@ -20,7 +20,7 @@ RSpec.describe ApiSessionHelper, type: :helper do
         result = helper.jwt_decode(token)
 
         expect(result[:success?]).to be true
-        expect(result[:token]).to include('user_id' => 456)
+        expect(result[:token]["payload"]).to include("user_id" => 456)
       end
     end
 

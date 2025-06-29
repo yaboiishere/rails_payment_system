@@ -21,7 +21,8 @@ module JwtAuthentication
 
     payload = helpers.jwt_decode(token)
     if payload[:success?]
-      user = User.find_by(id: payload[:token])
+      token = payload[:token]
+      user = User.find_by(id: token["payload"])
       if user.present?
         true
       else

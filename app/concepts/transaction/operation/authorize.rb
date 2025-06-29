@@ -4,19 +4,12 @@ module Transaction::Operation
   class Authorize < Trailblazer::Operation
     include Transaction::Operation::Shared
 
-    step :tx_type
     step :validate_merchant
     step :validate_customer
-    step :set_parent_transaction
-    step :validate_parent_transaction
     step :validate_amount
+    step :validate_no_parent_transaction
     step :build_model
     step :persist
-
-    def tx_type(ctx, **)
-      ctx[:tx_type] = :authorize
-      true
-    end
 
     def build_model(ctx, merchant:, params:, **)
       ctx[:transaction] = Transaction::Authorize.new(
@@ -27,6 +20,17 @@ module Transaction::Operation
         customer_email: params[:customer_email],
         customer_phone: params[:customer_phone]
       )
+    end
+
+    def validate_no_parent_transaction(ctx, params:, **)
+      parent_transaction_uuid = params[:parent_transaction_uuid]
+      if parent_transaction_uuid.present?
+        ctx[:errors] ||= []
+        ctx[:errors] << "Parent transaction uuid should not be present for authorize transactions"
+        false
+      else
+        true
+      end
     end
   end
 end

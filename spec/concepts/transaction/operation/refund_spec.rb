@@ -2,30 +2,37 @@
 
 require 'rails_helper'
 
-RSpec.describe Transaction::Operation::Charge, type: :operation do
-  let(:merchant) { create(:merchant, status: :active) }
+RSpec.describe Transaction::Operation::Refund, type: :operation do
+  let(:amount) { 100.0 }
+  let(:merchant) { create(:merchant, status: :active, total_transaction_sum: amount) }
 
-  let(:authorize_transaction) { create(:authorize_transaction) }
+  let(:authorize_transaction) {
+    create(:authorize_transaction, merchant: merchant, amount: amount) }
+  let(:charge_transaction) {
+    create(:charge_transaction,
+           parent_transaction: authorize_transaction, merchant: merchant, amount: amount) }
 
   let(:valid_params) do
     {
-      parent_transaction_uuid: authorize_transaction.uuid,
-      amount: authorize_transaction.amount,
+      parent_transaction_uuid: charge_transaction.uuid,
+      amount: charge_transaction.amount,
       customer_email: "client@example.com",
       customer_phone: "1234567890"
     }
   end
 
   context "with valid inputs" do
-    it "creates a charged transaction" do
+    it "creates a refund transaction" do
       result = described_class.call(merchant: merchant, params: valid_params)
 
       expect(result).to be_success
-      expect(result[:model]).to be_a(Transaction::Charge)
+      expect(result[:model]).to be_a(Transaction::Refund)
       expect(result[:model].status).to eq("approved")
       expect(result[:model].merchant).to eq(merchant)
-      expect(result[:model].parent_transaction).to eq(authorize_transaction)
-      expect(merchant.reload.total_transaction_sum).to eq(authorize_transaction.amount)
+      expect(result[:model].parent_transaction).to be_a(Transaction::Charge)
+      expect(result[:model].parent_transaction.uuid).to eq(charge_transaction.uuid)
+      expect(result[:model].parent_transaction.status).to eq("refunded")
+      expect(merchant.reload.total_transaction_sum).to eq(0)
     end
   end
 
@@ -51,28 +58,16 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
     end
 
     it "fails when parent transaction is not found" do
-      wrong_parent = create(:refund_transaction)
       result = described_class.call(
         merchant: merchant,
-        params: valid_params.merge(parent_transaction_uuid: wrong_parent)
+        params: valid_params.merge(parent_transaction_uuid: "non-existent-uuid")
       )
 
       expect(result).not_to be_success
       expect(result[:errors]).to include("Parent transaction not found")
     end
 
-    it "fails when parent transaction is not approved" do
-      pending_parent = create(:authorize_transaction, status: "reversed")
-      result = described_class.call(
-        merchant: merchant,
-        params: valid_params.merge(parent_transaction_uuid: pending_parent.uuid)
-      )
-
-      expect(result).not_to be_success
-      expect(result[:errors]).to include("Parent transaction must be approved")
-    end
-
-    it "fails when parent transaction is not an authorize transaction" do
+    it "fails when parent transaction is not a charge transaction" do
       wrong_parent = create(:refund_transaction)
       result = described_class.call(
         merchant: merchant,
@@ -80,7 +75,7 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
       )
 
       expect(result).not_to be_success
-      expect(result[:errors]).to include("Parent transaction must be an authorize transaction")
+      expect(result[:errors]).to include("Parent transaction must be a charge transaction")
     end
   end
 
@@ -102,7 +97,7 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
       )
 
       expect(result).not_to be_success
-      expect(result[:errors]).to include("Amount must be the same as the authorize transaction amount")
+      expect(result[:errors]).to include("Amount must be the same as the charge transaction amount")
     end
   end
 
@@ -135,7 +130,7 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
       result = described_class.call(merchant: merchant, params: valid_params)
 
       expect(result).to be_success
-      expect(merchant.reload.total_transaction_sum).to eq(authorize_transaction.amount)
+      expect(merchant.reload.total_transaction_sum).to eq(0)
     end
 
     it "fails to update merchant total transaction sum" do
@@ -146,25 +141,34 @@ RSpec.describe Transaction::Operation::Charge, type: :operation do
       expect(result).not_to be_success
       expect(result[:errors]).to include("Failed to update merchant total")
     end
+
     it "does not update merchant total transaction sum if transaction is not approved" do
-      allow_any_instance_of(Transaction::Charge).to receive(:is_approved?).and_return(false)
+      allow_any_instance_of(Transaction::Refund).to receive(:is_approved?).and_return(false)
       result = described_class.call(merchant: merchant, params: valid_params)
 
       expect(result).not_to be_success
       expect(result[:errors]).to include("Transaction is not approved, cannot update merchant total")
-      expect(merchant.reload.total_transaction_sum).to eq(0)
+      expect(merchant.reload.total_transaction_sum).to eq(amount)
     end
   end
 
   context "when transaction fails to save" do
     it "returns validation errors" do
-      allow_any_instance_of(Transaction::Charge).to receive(:save).and_return(false)
-      allow_any_instance_of(Transaction::Charge).to receive_message_chain(:errors, :full_messages).and_return([ "Some error" ])
+      allow_any_instance_of(Transaction::Refund).to receive(:save).and_return(false)
+      allow_any_instance_of(Transaction::Refund).to receive_message_chain(:errors, :full_messages).and_return([ "Some error" ])
 
       result = described_class.call(merchant: merchant, params: valid_params)
 
       expect(result).not_to be_success
       expect(result[:errors]).to include("Some error")
+    end
+
+    it "fails to save parent transaction" do
+      allow_any_instance_of(Transaction::Charge).to receive(:save).and_return(false)
+      result = described_class.call(merchant: merchant, params: valid_params)
+
+      expect(result).not_to be_success
+      expect(result[:errors]).to include("Failed to update parent transaction status")
     end
   end
 end

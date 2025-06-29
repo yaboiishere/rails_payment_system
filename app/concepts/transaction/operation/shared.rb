@@ -38,15 +38,15 @@ module Transaction::Operation::Shared
     end
   end
 
-  def set_parent_transaction(ctx, tx_type:, params:, **)
+  def set_parent_transaction(ctx, params:, **)
     parent_transaction_uuid = params[:parent_transaction_uuid]
-    if tx_type == :authorize && parent_transaction_uuid.present?
+    if parent_transaction_uuid.nil?
       ctx[:errors] ||= []
-      ctx[:errors] << "Parent transaction uuid should not be present for authorize transactions"
+      ctx[:errors] << "parent_transaction_uuid is missing"
       false
-    elsif parent_transaction_uuid.present?
+    else
       parent_transaction = Transaction.find_by(uuid: parent_transaction_uuid)
-      if parent_transaction
+      if parent_transaction.present?
         ctx[:parent_transaction] = parent_transaction
         true
       else
@@ -54,58 +54,15 @@ module Transaction::Operation::Shared
         ctx[:errors] << "Parent transaction not found"
         false
       end
-    else
-      ctx[:parent_transaction] = nil
-      true
     end
   end
 
-  def validate_parent_transaction(ctx, tx_type:, parent_transaction:, params:, **)
-    amount = params[:amount].to_d
-    ctx[:errors] ||= []
-    case tx_type
-    when :authorize
-      return true if parent_transaction.nil?
-
-      # This should not happen due to the set_parent_transaction step, but it's left in just in case
-      ctx[:errors] << "Parent transaction should not be present for authorize transactions"
-      false
-    when :charge
-      if parent_transaction.is_a?(Transaction::Authorize) && parent_transaction.is_approved?
-        # TODO: check if the amount should be the same as in the authorize transaction or just lower or equal to
-        if parent_transaction.amount == amount
-          true
-        else
-          ctx[:errors] << "Amount must be the same as the authorize transaction amount"
-          false
-        end
-      else
-        ctx[:errors] << "Parent transaction must be an authorize transaction"
-        false
-      end
-    when :refund
-      if parent_transaction.is_a?(Transaction::Charge) && parent_transaction.is_approved?
-        # TODO: check if there can be partial refunds
-        if parent_transaction.amount == amount
-          true
-        else
-          ctx[:errors] << "Amount must be the same as the charge transaction amount"
-          false
-        end
-      else
-        ctx[:errors] << "Parent transaction must be a charge transaction"
-        false
-      end
-    when :reversal
-      if parent_transaction.is_a?(Transaction::Authorize) && parent_transaction.is_approved?
-        true
-      else
-
-        ctx[:errors] << "Parent transaction must be an authorize transaction"
-        false
-      end
+  def is_parent_approved?(ctx, parent_transaction:, **)
+    if parent_transaction.is_approved?
+      true
     else
-      ctx[:errors] << "Unknown transaction type"
+      ctx[:errors] ||= []
+      ctx[:errors] << "Parent transaction must be approved"
       false
     end
   end
@@ -119,28 +76,5 @@ module Transaction::Operation::Shared
       ctx[:errors] = transaction.errors.full_messages
       false
     end
-  end
-
-  def update_merchant_total(ctx, model:, **)
-    ctx[:errors] ||= []
-    if model.is_a?(Transaction) && model.is_approved?
-      if model.is_a? Transaction::Charge
-        if model.merchant.increment(:total_transaction_sum, model.amount).save
-          return true
-        else
-          ctx[:errors] << "Failed to update merchant total"
-          return false
-        end
-      elsif model.is_a?(Transaction::Refund)
-        if model.merchant.decrement(:total_transaction_sum, model.amount).save
-          return true
-        else
-          ctx[:errors] << "Failed to update merchant total"
-          return false
-        end
-      end
-    end
-    ctx[:errors] << "Transaction is not charge or refund"
-    false
   end
 end

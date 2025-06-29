@@ -1,90 +1,97 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+require 'faker'
 
-# Clear old data
-Transaction.delete_all
-User.delete_all
+puts "Seeding users and transactions..."
 
-puts "Seeding users..."
-
-User::Admin.create!(
-  name: "Alice Admin",
-  email: "admin@example.com",
-  status: :active
+admin = User::Admin.create!(
+  email: "admin@payment.com",
+  password: "password123",
+  name: "Admin User",
+  status: "active"
 )
 
-merchant1 = User::Merchant.create!(
-  name: "Tech Store",
-  email: "merchant1@example.com",
-  status: :active,
-  total_transaction_sum: 0
-)
+puts "Admin created: #{admin.email}"
 
-User::Merchant.create!(
-  name: "Coffee Shop",
-  email: "merchant2@example.com",
-  status: :inactive,
-  total_transaction_sum: 0
-)
+3.times do |i|
+  merchant = User::Merchant.create!(
+    email: "merchant#{i + 1}@payment.com",
+    password: "password123",
+    status: "active",
+    name: "Merchant #{i + 1}",
+  )
 
-merchant3 = User::Merchant.create!(
-  name: "Gaming Hub",
-  email: "merchant3@example.com",
-  status: :active,
-  total_transaction_sum: 0
-)
+  puts "Merchant created: #{merchant.email}"
 
-# Authorize for merchant1
-auth_tx = Transaction::Authorize.create!(
-  merchant: merchant1,
-  amount: 100.00,
-  status: "approved",
-  customer_email: "john@example.com",
-  customer_phone: "1234567890"
-)
+  # Create Authorize
+  auth_result = Transaction::Operation::Authorize.call(
+    merchant: merchant,
+    params: {
+      amount: 100.00,
+      customer_email: Faker::Internet.email,
+      customer_phone: Faker::PhoneNumber.cell_phone
+    }
+  )
 
-# Charge referencing the authorize
-charge_tx = Transaction::Charge.create!(
-  merchant: merchant1,
-  amount: 100.00,
-  status: "approved",
-  parent_transaction: auth_tx,
-  customer_email: "john@example.com",
-  customer_phone: "1234567890"
-)
+  if auth_result.success?
+    authorize_tx = auth_result[:model]
+    puts "  Authorize #{authorize_tx.uuid} created"
+  else
+    puts "  Authorize failed: #{auth_result[:errors]}"
+    next
+  end
 
-# Refund referencing the charge
-Transaction::Refund.create!(
-  merchant: merchant1,
-  amount: 100.00,
-  status: "refunded",
-  parent_transaction: charge_tx,
-  customer_email: "john@example.com",
-  customer_phone: "1234567890"
-)
+  # Create Charge
+  charge_result = Transaction::Operation::Charge.call(
+    merchant: merchant,
+    params: {
+      amount: authorize_tx.amount,
+      parent_transaction_uuid: authorize_tx.uuid,
+      customer_email: Faker::Internet.email,
+      customer_phone: Faker::PhoneNumber.cell_phone
+    }
+  )
 
-# Reversal referencing another auth
-auth2 = Transaction::Authorize.create!(
-  merchant: merchant3,
-  amount: 50.00,
-  status: "approved",
-  customer_email: "jane@example.com",
-  customer_phone: "5551234567"
-)
+  if charge_result.success?
+    charge_tx = charge_result[:model]
+    puts "  Charge #{charge_tx.uuid} created"
+  else
+    puts "  Charge failed: #{charge_result[:errors]}"
+    next
+  end
 
-Transaction::Reversal.create!(
-  merchant: merchant3,
-  status: "reversed",
-  parent_transaction: auth2,
-  customer_email: "jane@example.com",
-  customer_phone: "5551234567"
-)
+  # Create Refund
+  refund_result = Transaction::Operation::Refund.call(
+    merchant: merchant,
+    params: {
+      amount: charge_tx.amount,
+      parent_transaction_uuid: charge_tx.uuid,
+      customer_email: Faker::Internet.email,
+      customer_phone: Faker::PhoneNumber.cell_phone
+    }
+  )
+
+  if refund_result.success?
+    refund_tx = refund_result[:model]
+    puts "  Refund #{refund_tx.uuid} created"
+  else
+    puts "  Refund failed: #{refund_result[:errors]}"
+  end
+
+  # Create Reversal
+  reversal_result = Transaction::Operation::Reversal.call(
+    merchant: merchant,
+    params: {
+      parent_transaction_uuid: authorize_tx.uuid,
+      amount: nil,
+      customer_email: Faker::Internet.email,
+      customer_phone: Faker::PhoneNumber.cell_phone
+    }
+  )
+
+  if reversal_result.success?
+    puts "  Reversal #{reversal_result[:model].uuid} created"
+  else
+    puts "  Reversal failed: #{reversal_result[:errors]}"
+  end
+end
 
 puts "Seeding complete!"

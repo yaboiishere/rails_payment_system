@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   # resources :passwords, param: :token
 
   # nest transactions resources under merchants
-  resources :merchant, only: [ :index, :show ] do
+  resources :merchant, only: [ :index, :show, :edit, :update, :destroy ] do
     scope module: :merchant do
       resources :transaction, only: [ :show ]
     end

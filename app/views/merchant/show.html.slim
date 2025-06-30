@@ -3,23 +3,31 @@
     .col-md-8.offset-md-2
       h2.mb-4.text-center Merchant: #{@merchant.name}
 
-      dl.row
-        dt.col-sm-4 Email
-        dd.col-sm-8 = @merchant.email
+      .card.shadow-sm
+        .card-body
+          dt.col-sm-4 Email
+          dd.col-sm-8 = @merchant.email
 
-        dt.col-sm-4 Status
-        dd.col-sm-8 = @merchant.status_badge
+          dt.col-sm-4 Status
+          dd.col-sm-8 = @merchant.status_badge
 
-        dt.col-sm-4 Created At
-        dd.col-sm-8 = @merchant.created_at
+          dt.col-sm-4 Created At
+          dd.col-sm-8 = @merchant.created_at
 
-        dt.col-sm-4 Total Transaction Sum
-        dd.col-sm-8 = @merchant.total_sum
+          dt.col-sm-4 Total Transaction Sum
+          dd.col-sm-8 = @merchant.total_sum
 
-        dt.col-sm-4 Total Transactions
-        dd.col-sm-8 = @merchant.transactions_total
+          dt.col-sm-4 Total Transactions
+          dd.col-sm-8 = @merchant.transactions_total
+
+        .text-end.m-1.flex
+          - if Current.user.admin?
+            = link_to 'Back', merchant_index_path, class: 'btn btn-secondary me-2'
+            = button_to 'Delete', merchant_path(@merchant.id), method: :delete, data: { turbo_confirm: 'Are you sure?' },form_class: "d-inline", class: 'btn btn-danger me-2'
+          = link_to 'Edit', edit_merchant_path(@merchant.id), class: 'btn btn-primary mr-2'
 
 
-  .row.mt-4
-    .col
-      = render partial: "merchant/transaction/table", locals: { transactions: @merchant.transactions }
+
+    .row.mt-4
+      .col
+        = render partial: "merchant/transaction/table", locals: { transactions: @merchant.transactions }

@@ -21,8 +21,6 @@ RSpec.describe "merchant/transaction/_ancestry_table.html.slim", type: :view do
       current_presenter: ancestry[1]
     }
 
-    puts rendered
-
     expect(rendered).to have_css("table")
     expect(rendered).to include(root_tx.uuid)
     expect(rendered).to include(child_tx.uuid)

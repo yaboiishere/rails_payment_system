@@ -1,0 +1,24 @@
+.container.mt-5
+  .row
+    .col-md-6.offset-md-3
+      h2.mb-4.text-center Edit Merchant
+
+      = form_with model: @form, url: merchant_path(@merchant), method: :patch, local: true do |f|
+        - if @form.errors.any?
+          .alert.alert-danger
+            h5 = pluralize(@form.errors.count, "error")
+            ul
+              - @form.errors.full_messages.each do |msg|
+                li = msg
+
+        .mb-3
+          = f.label :email, class: "form-label"
+          = f.email_field :email, class: "form-control"
+
+        .mb-3
+          = f.label :status, class: "form-label"
+          = f.select :status, User::Merchant.statuses.keys.map { |s| [s.titleize, s] }, {}, class: "form-select"
+
+        .d-flex.justify-content-between
+          = link_to "Cancel", merchant_path(@merchant), class: "btn btn-outline-secondary"
+          = f.submit "Update", class: "btn btn-primary"

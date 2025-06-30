@@ -8,6 +8,8 @@ RSpec.describe "merchant/show.html.slim", type: :view do
     assign(:merchant, MerchantPresenter.new(merchant))
 
     allow(view).to receive(:render).and_call_original
+    admin = create(:admin)
+    allow(Current).to receive(:user).and_return(admin)
 
     render
 

@@ -13,6 +13,10 @@ class MerchantPresenter
     @merchant = merchant
   end
 
+  def id
+    merchant.id
+  end
+
   def name
     merchant.name
   end

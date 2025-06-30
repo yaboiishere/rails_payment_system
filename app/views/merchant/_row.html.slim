@@ -1,5 +1,15 @@
-tr onclick="window.location='#{merchant.link}'" style="cursor: pointer;"
-  td = merchant.email
-  td = merchant.status_badge
-  td = merchant.total_sum
-  td = merchant.created_at
+tr style="cursor: pointer;"
+  td onclick="window.location='#{merchant.link}'" = merchant.email
+  td onclick="window.location='#{merchant.link}'" = merchant.status_badge
+  td onclick="window.location='#{merchant.link}'" = merchant.total_sum
+  td onclick="window.location='#{merchant.link}'" = merchant.created_at
+
+  td.text-center
+    = link_to "Edit", edit_merchant_path(merchant.merchant), class: "btn btn-sm btn-outline-secondary me-1"
+
+    = button_to "Delete",
+            merchant_path(merchant.merchant),
+            method: :delete,
+            data: { turbo_confirm: "Are you sure?" },
+            form_class: "d-inline",
+            class: "btn btn-sm btn-outline-danger"

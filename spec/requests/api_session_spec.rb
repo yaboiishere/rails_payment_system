@@ -11,7 +11,7 @@ RSpec.describe "ApiSessionController", type: :request do
   describe "POST /api_session" do
     context "with valid credentials" do
       it "returns a JWT token" do
-        post api_session_index_path, params: { email: user.email, password: user.password }
+        post session_index_path, params: { email: user.email, password: user.password }
 
         expect(response).to have_http_status(:ok)
         body = JSON.parse(response.body)
@@ -21,7 +21,7 @@ RSpec.describe "ApiSessionController", type: :request do
 
     context "with invalid credentials" do
       it "returns unauthorized error" do
-        post api_session_index_path, params: { email: "wrong@example.com", password: "password" }
+        post session_index_path, params: { email: "wrong@example.com", password: "password" }
 
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Invalid username or password")
@@ -35,7 +35,7 @@ RSpec.describe "ApiSessionController", type: :request do
 
     context "with valid JWT" do
       it "returns success" do
-        get api_session_index_path, headers: { "Authorization" => "Bearer #{token}" }
+        get session_index_path, headers: { "Authorization" => "Bearer #{token}" }
 
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to include("message" => "This is the API session index.")
@@ -44,7 +44,7 @@ RSpec.describe "ApiSessionController", type: :request do
 
     context "with missing JWT" do
       it "returns unauthorized" do
-        get api_session_index_path
+        get session_index_path
 
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Missing token")
@@ -53,7 +53,7 @@ RSpec.describe "ApiSessionController", type: :request do
 
     context "with invalid JWT" do
       it "returns unauthorized" do
-        get api_session_index_path, headers: { "Authorization" => "Bearer invalid.token" }
+        get session_index_path, headers: { "Authorization" => "Bearer invalid.token" }
 
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Invalid token")
@@ -62,7 +62,7 @@ RSpec.describe "ApiSessionController", type: :request do
 
     context "with valid JWT but no matching user" do
       it "returns unauthorized" do
-        get api_session_index_path, headers: { "Authorization" => "Bearer #{bad_token}" }
+        get session_index_path, headers: { "Authorization" => "Bearer #{bad_token}" }
 
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Invalid session")

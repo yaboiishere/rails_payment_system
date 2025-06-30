@@ -1,5 +1,5 @@
-tr style="cursor: pointer;" data-href=merchant_path(user)
-  td = user.name
-  td = user.email
-  td.badge class=(user.active? ? "bg-success" : "bg-secondary") = user.status.capitalize
-  td = user.type || 'User'
+tr onclick="window.location='#{merchant.link}'" style="cursor: pointer;"
+  td = merchant.email
+  td = merchant.status_badge
+  td = merchant.total_sum
+  td = merchant.created_at

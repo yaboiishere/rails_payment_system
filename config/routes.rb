@@ -4,7 +4,9 @@ Rails.application.routes.draw do
 
   # nest transactions resources under merchants
   resources :merchant, only: [ :index, :show ] do
-    resources :transaction, only: [ :show ]
+    scope module: :merchant do
+      resources :transaction, only: [ :show ]
+    end
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -19,9 +21,9 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "home#index"
 
-  scope :api do
-    scope :v1 do
-      resources :api_session, only: [ :create, :index ]
+  scope :api, module: "api" do
+    scope :v1, module: "v1" do
+      resources :session, only: [ :create, :index ]
     end
   end
 end

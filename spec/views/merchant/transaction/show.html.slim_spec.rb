@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "transaction/show.html.slim", type: :view do
+RSpec.describe "merchant/transaction/show.html.slim", type: :view do
   let(:merchant) { create(:merchant, email: "merchant@payment.com") }
 
   let(:parent_transaction) do

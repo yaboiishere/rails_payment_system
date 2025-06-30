@@ -1,0 +1,18 @@
+-# Expects: ancestry (array of TransactionPresenters), current_presenter
+
+.row.mt-5
+  .col
+    h4.text-center.mb-3 Ancestry
+
+    table.table.table-bordered.table-hover
+      thead.table-light
+        tr
+          th Type
+          th UUID
+          th Status
+          th Amount
+          th Created At
+      tbody
+        - ancestry.each do |presenter|
+          - is_current = presenter.uuid == current_presenter.uuid
+          = render partial: "merchant/transaction/ancestry_row", locals: { presenter: presenter, is_current: is_current }

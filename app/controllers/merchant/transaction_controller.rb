@@ -1,4 +1,4 @@
-class TransactionController < ApplicationController
+class Merchant::TransactionController < ApplicationController
   before_action :require_owner_or_admin, only: :show
 
   def show

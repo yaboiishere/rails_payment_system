@@ -11,9 +11,4 @@
             th Total Transaction Sum
             th Created At
         tbody
-          - @merchant_presenters.each do |merchant|
-            tr onclick="window.location='#{merchant.link}'" style="cursor: pointer;"
-              td = merchant.email
-              td = merchant.status_badge
-              td = merchant.total_sum
-              td = merchant.created_at
+          = render partial: "merchant/row", collection: @merchant_presenters, as: :merchant

@@ -18,7 +18,7 @@ class TransactionPresenter
     transaction.uuid
   end
 
-  def uuid_link
+  def link
     merchant_transaction_path(transaction.merchant, transaction)
   end
 
@@ -81,6 +81,16 @@ class TransactionPresenter
 
   def merchant_link
     link_to(transaction.merchant.name, merchant_path(transaction.merchant), class: "text-decoration-none")
+  end
+
+  def ancestry_chain
+    chain = []
+    current = transaction
+    while current
+      chain << TransactionPresenter.new(current)
+      current = current.parent_transaction
+    end
+    chain.reverse
   end
 
   private

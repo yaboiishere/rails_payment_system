@@ -2,6 +2,7 @@
 
 module JwtAuthentication
   extend ActiveSupport::Concern
+  include ApiSessionHelper
 
   included do
     before_action :require_jwt
@@ -19,7 +20,7 @@ module JwtAuthentication
     token = request.headers["Authorization"].to_s.remove("Bearer ").presence
     return render json: { error: "Missing token" }, status: :unauthorized unless token
 
-    payload = helpers.jwt_decode(token)
+    payload = jwt_decode(token)
     if payload[:success?]
       token = payload[:token]
       user = User.find_by(id: token["payload"])

@@ -11,7 +11,7 @@ RSpec.describe TransactionPresenter do
   end
 
   it "returns the transaction's uuid link" do
-    expect(presenter.uuid_link).to include("/merchant/#{transaction.merchant.id}/transaction/#{transaction.id}")
+    expect(presenter.link).to include("/merchant/#{transaction.merchant.id}/transaction/#{transaction.id}")
   end
 
   { authorize_transaction: "Authorize", charge_transaction: "Charge", refund_transaction: "Refund", reversal_transaction: "Reversal" }.each do |type, label|

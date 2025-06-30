@@ -36,3 +36,8 @@
             dt.col-sm-4 Merchant
             dd.col-sm-8 = @transaction_presenter.merchant_link
 
+            - ancestry = @transaction_presenter.ancestry_chain
+
+            = render partial: "merchant/transaction/ancestry_table",
+                    locals: { ancestry: ancestry, current_presenter: @transaction_presenter }
+

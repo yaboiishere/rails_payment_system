@@ -9,6 +9,6 @@
         th Created At
         th Parent
     tbody
-      = render partial: "transaction/row", collection: transactions, as: :transaction
+      = render partial: "merchant/transaction/row", collection: transactions, as: :transaction
 - else
   p.text-muted No transactions for this merchant.

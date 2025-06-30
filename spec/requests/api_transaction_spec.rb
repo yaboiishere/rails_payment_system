@@ -55,7 +55,6 @@ RSpec.describe 'API Transaction', type: :request do
         expect(response).to have_http_status(:created)
         parsed_authorize_response = JSON.parse(response.body)
         expect(parsed_authorize_response).to have_key('id')
-        puts parsed_authorize_response
         expect(parsed_authorize_response['type']).to eq('Transaction::Authorize')
 
         auth_uuid = parsed_authorize_response['uuid']
@@ -89,6 +88,40 @@ RSpec.describe 'API Transaction', type: :request do
         expect(parsed_reversal_response['type']).to eq('Transaction::Reversal')
         expect(parsed_reversal_response['parent_transaction_uuid']).to eq(auth_uuid)
         expect(parsed_reversal_response['amount']).to be_nil
+      end
+      it 'returns error for invalid transaction type' do
+        invalid_params = valid_params.deep_dup
+        invalid_params[:transaction_type] = 'invalid_type'
+
+        post transaction_index_path, params: invalid_params,
+             headers: { 'Authorization' => "Bearer #{@token}" }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(JSON.parse(response.body)).to have_key('errors')
+        expect(JSON.parse(response.body)['errors']).to include('Invalid transaction type invalid_type. Valid types are: authorize, charge, refund, reversal')
+      end
+
+      it 'returns error for missing required fields' do
+        invalid_params = valid_params.deep_dup
+        invalid_params.delete(:amount) # Missing amount
+
+        post transaction_index_path, params: invalid_params,
+             headers: { 'Authorization' => "Bearer #{@token}" }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        parsed_body = JSON.parse(response.body)
+        expect(parsed_body).to have_key('errors')
+        expect(parsed_body['errors']).to include("Amount must be greater than zero")
+      end
+
+      it 'returns error for missing merchant_id, unable to authenticate' do
+        invalid_params = valid_params.deep_dup
+        invalid_params.delete(:merchant_id)
+
+        post transaction_index_path, params: invalid_params,
+             headers: { 'Authorization' => "Bearer #{@token}" }
+
+        expect(response).to have_http_status(:forbidden)
       end
     end
 

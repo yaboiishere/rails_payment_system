@@ -11,6 +11,7 @@ class Transaction::Create < Trailblazer::Operation
     ctx[:merchant] = User::Merchant.find_by(id: merchant_id)
 
     if ctx[:merchant].nil?
+      # This is unreachable code, because the jwt authentication layer should prevent this from happening.
       ctx[:errors] ||= []
       ctx[:errors] << "Merchant does not exist"
       false
@@ -48,24 +49,18 @@ class Transaction::Create < Trailblazer::Operation
   end
 
   def format_response(ctx, **)
-    if ctx[:model].present?
-      ctx[:response] = {
-        id: ctx[:model].id,
-        type: ctx[:model].class.name,
-        amount: ctx[:model].amount,
-        status: ctx[:model].status,
-        customer_email: ctx[:model].customer_email,
-        customer_phone: ctx[:model].customer_phone,
-        merchant_id: ctx[:model].merchant_id,
-        parent_transaction_uuid: ctx[:model].parent_transaction&.uuid,
-        parent_transaction_id: ctx[:model].parent_transaction&.id,
-        uuid: ctx[:model].uuid
-      }
-      true
-    else
-      ctx[:errors] ||= []
-      ctx[:errors] << "Failed to create transaction"
-      false
-    end
+    ctx[:response] = {
+      id: ctx[:model].id,
+      type: ctx[:model].class.name,
+      amount: ctx[:model].amount,
+      status: ctx[:model].status,
+      customer_email: ctx[:model].customer_email,
+      customer_phone: ctx[:model].customer_phone,
+      merchant_id: ctx[:model].merchant_id,
+      parent_transaction_uuid: ctx[:model].parent_transaction&.uuid,
+      parent_transaction_id: ctx[:model].parent_transaction&.id,
+      uuid: ctx[:model].uuid
+    }
+    true
   end
 end

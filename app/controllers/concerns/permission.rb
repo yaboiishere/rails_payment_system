@@ -10,8 +10,20 @@ module Permission
   end
 
   def require_owner_or_admin
-    user = User.find_by(id: params[:id])
-    unless user && user == Current.user || Current.user.admin?
+    return if Current.user.admin?
+
+    authorized =
+      # Transaction context: check if the transaction belongs to the merchant
+      if params[:merchant_id]
+        Transaction.exists?(id: params[:id], merchant_id: Current.user.id)
+      elsif params[:id]
+        # Merchant context: check self
+        Current.user.id.to_s == params[:id].to_s
+      else
+        false
+      end
+
+    unless authorized
       redirect_to merchant_path(Current.user), alert: "Access denied."
     end
   end

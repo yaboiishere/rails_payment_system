@@ -1,12 +1,9 @@
 class HomeController < ApplicationController
   def index
-    case Current.user
-    when User::Merchant
-      redirect_to merchant_path(Current.user)
-    when User::Admin
+    if Current.user.admin?
       redirect_to merchant_index_path
     else
-      redirect_to new_session_path
+      redirect_to merchant_path(Current.user)
     end
   end
 end

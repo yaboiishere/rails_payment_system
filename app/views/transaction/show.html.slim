@@ -1,0 +1,38 @@
+.container.mt-5
+  .row
+    .col-md-8.offset-md-2
+      h2.mb-4.text-center
+        i.fas.fa-file-invoice-dollar.me-2
+        | Transaction Details
+
+      .card.shadow-sm
+        .card-body
+          dl.row.mb-0.flex
+            dt.col-sm-4 UUID
+            dd.col-sm-8.text-monospace = @transaction_presenter.uuid
+
+            dt.col-sm-4 Type
+            dd.col-sm-8
+              = @transaction_presenter.type_label_badge
+
+            dt.col-sm-4 Status
+            dd.col-sm-8 = @transaction_presenter.status_badge
+
+            dt.col-sm-4 Amount
+            dd.col-sm-8.fw-semibold = @transaction_presenter.amount
+
+            dt.col-sm-4 Customer Email
+            dd.col-sm-8 = @transaction_presenter.customer_email
+
+            dt.col-sm-4 Customer Phone
+            dd.col-sm-8 = @transaction_presenter.customer_phone
+
+            dt.col-sm-4 Created At
+            dd.col-sm-8 = @transaction_presenter.created_at
+
+            dt.col-sm-4 Parent Transaction
+            dd.col-sm-8 = @transaction_presenter.parent_uuid_link.presence || content_tag(:em, "None")
+
+            dt.col-sm-4 Merchant
+            dd.col-sm-8 = @transaction_presenter.merchant_link
+

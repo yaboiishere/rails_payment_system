@@ -1,13 +1,11 @@
 Rails.application.routes.draw do
-  get "home/index"
-  scope :api do
-    scope :v1 do
-      resources :api_session, only: [ :create, :index ]
-    end
-  end
   resource :session
-  resources :passwords, param: :token
-  resources :merchant, only: [ :index, :show ]
+  # resources :passwords, param: :token
+
+  # nest transactions resources under merchants
+  resources :merchant, only: [ :index, :show ] do
+    resources :transaction, only: [ :show ]
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -20,4 +18,10 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "home#index"
+
+  scope :api do
+    scope :v1 do
+      resources :api_session, only: [ :create, :index ]
+    end
+  end
 end

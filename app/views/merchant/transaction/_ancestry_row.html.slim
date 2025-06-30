@@ -1,6 +1,6 @@
 tr class=(is_current ? "table-primary fw-bold" : "") onclick=(is_current ? "void(0)" : "window.location='#{presenter.link}'") style=(is_current ? "" : "cursor: pointer;")
   td = presenter.type_label
-  td = presenter.parent_uuid_link
+  td = presenter.uuid
   td = presenter.status_badge
   td = presenter.amount
   td = presenter.created_at

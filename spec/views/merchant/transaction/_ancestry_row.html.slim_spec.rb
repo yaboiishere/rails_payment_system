@@ -11,7 +11,7 @@ RSpec.describe "merchant/transaction/_ancestry_row.html.slim", type: :view do
     render partial: "merchant/transaction/ancestry_row", locals: { presenter: presenter, is_current: false }
 
     expect(rendered).to include("Charge")
-    expect(rendered).to include(transaction.parent_transaction.uuid)
+    expect(rendered).to include(transaction.uuid)
     expect(rendered).to include("$100.00")
     expect(rendered).to include("Approved")
     expect(rendered).to include(merchant_transaction_path(merchant, transaction))

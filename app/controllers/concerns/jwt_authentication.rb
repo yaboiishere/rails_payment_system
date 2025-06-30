@@ -23,8 +23,8 @@ module JwtAuthentication
     payload = jwt_decode(token)
     if payload[:success?]
       token = payload[:token]
-      user = User.find_by(id: token["payload"])
-      if user.present?
+      @current_user = User.find_by(id: token["payload"])
+      if @current_user.present?
         true
       else
         render json: { error: "Invalid session" }, status: :unauthorized
@@ -32,5 +32,17 @@ module JwtAuthentication
     else
       render json: { error: "Invalid token" }, status: :unauthorized
     end
+  end
+
+  def current_user
+    @current_user
+  end
+
+  def verify_merchant(merchant_id)
+    unless current_user.id.to_s == merchant_id.to_s
+      render json: { error: "Unauthorized access" }, status: :forbidden
+      return false
+    end
+    true
   end
 end

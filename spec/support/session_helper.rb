@@ -2,6 +2,7 @@
 
 module SessionHelper
   include ActionDispatch::Cookies::ChainedCookieJars
+  include ApiSessionHelper
 
   def sign_in_as(user)
     Current.session = user.sessions.create!
@@ -10,5 +11,9 @@ module SessionHelper
       cookie_jar.signed[:session_id] = Current.session.id
       cookies[:session_id] = cookie_jar[:session_id]
     end
+  end
+
+  def create_jwt_token(user)
+    jwt_encode(user.id)
   end
 end

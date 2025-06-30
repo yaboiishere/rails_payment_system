@@ -29,6 +29,9 @@ html
     .container.mt-4
       = yield
 
-    - flash.each do |name, msg|
-      .container.mt-3
-        .alert class="alert-#{name == "alert" ? "danger" : "success"}" = msg
+    - if flash.any?
+      .position-fixed.top-0.end-0.p-3.mt-5.me-3(style="z-index: 1050")
+        - flash.each do |name, msg|
+          .alert.alert-dismissible.fade.show.shadow(data-controller="flash" role="alert" class="alert-#{name == "alert" ? "danger" : "success"}")
+            = msg
+            button.btn-close(type="button" data-bs-dismiss="alert" aria-label="Close")

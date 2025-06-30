@@ -1,4 +1,4 @@
-tr style="cursor: pointer;" data-href=user_path(user)
+tr style="cursor: pointer;" data-href=merchant_path(user)
   td = user.name
   td = user.email
   td.badge class=(user.active? ? "bg-success" : "bg-secondary") = user.status.capitalize

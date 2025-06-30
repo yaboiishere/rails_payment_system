@@ -1,0 +1,25 @@
+.container.mt-5
+  .row
+    .col-md-8.offset-md-2
+      h2.mb-4.text-center Merchant: #{@merchant.name}
+
+      dl.row
+        dt.col-sm-4 Email
+        dd.col-sm-8 = @merchant.email
+
+        dt.col-sm-4 Status
+        dd.col-sm-8 = @merchant.status_badge
+
+        dt.col-sm-4 Created At
+        dd.col-sm-8 = @merchant.created_at
+
+        dt.col-sm-4 Total Transaction Sum
+        dd.col-sm-8 = @merchant.total_sum
+
+        dt.col-sm-4 Total Transactions
+        dd.col-sm-8 = @merchant.transactions_total
+
+
+  .row.mt-4
+    .col
+      = render partial: "transaction/table", locals: { transactions: @merchant.transactions }

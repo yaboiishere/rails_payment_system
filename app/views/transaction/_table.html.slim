@@ -1,4 +1,4 @@
-- if merchant.transactions.any?
+- if transactions.any?
   table.table.table-sm.table-striped
     thead
       tr
@@ -6,10 +6,9 @@
         th Type
         th Amount
         th Status
-        th Customer Email
+        th Created At
         th Parent
     tbody
-      - merchant.transactions.each do |tx|
-        = render partial: "transaction/row", locals: { tx: tx }
+      = render partial: "transaction/row", collection: transactions, as: :transaction
 - else
   p.text-muted No transactions for this merchant.

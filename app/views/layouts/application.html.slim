@@ -30,5 +30,6 @@ html
       = yield
 
     - flash.each do |name, msg|
+      = puts(flash)
       .container.mt-3
         .alert class="alert-#{name == "alert" ? "danger" : "success"}" = msg

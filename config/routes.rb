@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "home/index"
   scope :api do
     scope :v1 do
       resources :api_session, only: [ :create, :index ]
@@ -18,5 +19,5 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  root "merchant#index"
+  root "home#index"
 end

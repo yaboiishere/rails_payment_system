@@ -24,8 +24,8 @@ RSpec.describe "merchant/transaction/_ancestry_table.html.slim", type: :view do
     expect(rendered).to have_css("table")
     expect(rendered).to include(root_tx.uuid)
     expect(rendered).to include(child_tx.uuid)
-    expect(rendered).to include(merchant_transaction_path(merchant, root_tx))
-    expect(rendered).not_to include(merchant_transaction_path(merchant, child_tx))
+    expect(rendered).to include(merchant_transaction_path(merchant, root_tx.uuid))
+    expect(rendered).not_to include(merchant_transaction_path(merchant, child_tx.uuid))
   end
 
   it "highlights the current transaction row" do

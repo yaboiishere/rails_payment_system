@@ -10,7 +10,7 @@ RSpec.describe "Transactions", type: :request do
       it "shows the transaction details" do
         sign_in_as(admin)
 
-        get merchant_transaction_path(merchant, transaction)
+        get merchant_transaction_path(merchant, transaction.uuid)
 
         expect(response).to have_http_status(:success)
         expect(response.body).to include(transaction.uuid)
@@ -32,7 +32,7 @@ RSpec.describe "Transactions", type: :request do
       it "shows the transaction details" do
         sign_in_as(merchant)
 
-        get merchant_transaction_path(merchant, transaction)
+        get merchant_transaction_path(merchant, transaction.uuid)
 
         expect(response).to have_http_status(:success)
         expect(response.body).to include(transaction.uuid)

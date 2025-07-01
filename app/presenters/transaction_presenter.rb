@@ -19,7 +19,7 @@ class TransactionPresenter
   end
 
   def link
-    merchant_transaction_path(transaction.merchant, transaction)
+    merchant_transaction_path(transaction.merchant, transaction.uuid)
   end
 
   def type_label
@@ -73,7 +73,7 @@ class TransactionPresenter
 
   def parent_uuid_link
     if transaction.parent_transaction
-      link_to(transaction.parent_transaction.uuid, merchant_transaction_path(transaction.merchant, transaction.parent_transaction), class: "text-decoration-none")
+      link_to(transaction.parent_transaction.uuid, merchant_transaction_path(transaction.merchant, transaction.parent_transaction.uuid), class: "text-decoration-none")
     else
       "-"
     end

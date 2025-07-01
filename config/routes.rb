@@ -5,7 +5,8 @@ Rails.application.routes.draw do
   # nest transactions resources under merchants
   resources :merchant, only: [ :index, :show, :edit, :update, :destroy ] do
     scope module: :merchant do
-      resources :transaction, only: [ :show ]
+      # use uuid instead of id for transactions
+      resources :transaction, only: [ :show ], param: :uuid
     end
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

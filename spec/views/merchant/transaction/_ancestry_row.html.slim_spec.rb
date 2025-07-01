@@ -14,7 +14,7 @@ RSpec.describe "merchant/transaction/_ancestry_row.html.slim", type: :view do
     expect(rendered).to include(transaction.uuid)
     expect(rendered).to include("$100.00")
     expect(rendered).to include("Approved")
-    expect(rendered).to include(merchant_transaction_path(merchant, transaction))
+    expect(rendered).to include(merchant_transaction_path(merchant, transaction.uuid))
   end
 
   it "adds highlight class when is_current is true" do

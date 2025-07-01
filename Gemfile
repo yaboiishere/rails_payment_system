@@ -49,6 +49,9 @@ gem "thruster", require: false
 gem "trailblazer-rails", "~> 2.1"
 gem "reform-rails", "~> 0.2.0"
 
+# work with xml
+gem "actionpack-xml_parser"
+
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 

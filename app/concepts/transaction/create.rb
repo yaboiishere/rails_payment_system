@@ -50,16 +50,14 @@ class Transaction::Create < Trailblazer::Operation
 
   def format_response(ctx, **)
     ctx[:response] = {
-      id: ctx[:model].id,
+      uuid: ctx[:model].uuid,
+      parent_transaction_uuid: ctx[:model].parent_transaction&.uuid,
       type: ctx[:model].class.name,
       amount: ctx[:model].amount,
       status: ctx[:model].status,
       customer_email: ctx[:model].customer_email,
       customer_phone: ctx[:model].customer_phone,
-      merchant_id: ctx[:model].merchant_id,
-      parent_transaction_uuid: ctx[:model].parent_transaction&.uuid,
-      parent_transaction_id: ctx[:model].parent_transaction&.id,
-      uuid: ctx[:model].uuid
+      merchant_id: ctx[:model].merchant_id
     }
     true
   end

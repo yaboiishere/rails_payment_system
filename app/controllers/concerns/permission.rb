@@ -15,7 +15,7 @@ module Permission
     authorized =
       # Transaction context: check if the transaction belongs to the merchant
       if params[:merchant_id]
-        Transaction.exists?(id: params[:id], merchant_id: Current.user.id)
+        Transaction.exists?(uuid: params[:uuid], merchant_id: Current.user.id)
       elsif params[:id]
         # Merchant context: check self
         Current.user.id.to_s == params[:id].to_s

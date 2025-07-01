@@ -11,7 +11,7 @@ RSpec.describe TransactionPresenter do
   end
 
   it "returns the transaction's uuid link" do
-    expect(presenter.link).to include("/merchant/#{transaction.merchant.id}/transaction/#{transaction.id}")
+    expect(presenter.link).to include("/merchant/#{transaction.merchant.id}/transaction/#{transaction.uuid}")
   end
 
   { authorize_transaction: "Authorize", charge_transaction: "Charge", refund_transaction: "Refund", reversal_transaction: "Reversal" }.each do |type, label|
@@ -80,7 +80,7 @@ RSpec.describe TransactionPresenter do
     presenter = described_class.new(charge_transaction)
     link = presenter.parent_uuid_link
     expect(link).to include("<a class=")
-    expect(link).to include("merchant/#{charge_transaction.merchant.id}/transaction/#{parent_transaction.id}")
+    expect(link).to include("merchant/#{charge_transaction.merchant.id}/transaction/#{parent_transaction.uuid}")
     expect(link).to include(parent_transaction.uuid)
   end
 

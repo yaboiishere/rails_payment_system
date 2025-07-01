@@ -16,4 +16,8 @@ module SessionHelper
   def create_jwt_token(user)
     jwt_encode(user.id)
   end
+
+  def to_xml(data, root)
+    data.to_xml(root: root, dasherize: false, skip_types: true)
+  end
 end

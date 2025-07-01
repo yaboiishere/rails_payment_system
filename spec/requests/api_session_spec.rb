@@ -17,6 +17,14 @@ RSpec.describe "ApiSessionController", type: :request do
         body = JSON.parse(response.body)
         expect(body["token"]).to be_a(String)
       end
+      it "returns a JWT token with XML" do
+        data = to_xml({ email: user.email, password: user.password }, "session")
+        post session_index_path, params: data, headers: { "CONTENT_TYPE" => "application/xml" }
+
+        expect(response).to have_http_status(:ok)
+        body = Nokogiri::XML(response.body)
+        expect(body.xpath("//token").text).to be_a(String)
+      end
     end
 
     context "with invalid credentials" do
@@ -25,6 +33,14 @@ RSpec.describe "ApiSessionController", type: :request do
 
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Invalid username or password")
+      end
+      it "returns unauthorized error with XML" do
+        data = to_xml({ email: "wrong@example.com", password: "password" }, "session")
+        post session_index_path, params: data, headers: { "CONTENT_TYPE" => "application/xml" }
+
+        expect(response).to have_http_status(:unauthorized)
+        body = Nokogiri::XML(response.body)
+        expect(body.xpath("//error").text).to eq("Invalid username or password")
       end
     end
   end
@@ -40,6 +56,15 @@ RSpec.describe "ApiSessionController", type: :request do
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to include("message" => "This is the API session index.")
       end
+
+      it "returns success with XML" do
+        data = to_xml({ message: "This is the API session index." }, "response")
+        get session_index_path, params: data, headers: { "CONTENT_TYPE" => "application/xml", "Authorization" => "Bearer #{token}" }
+
+        expect(response).to have_http_status(:ok)
+        body = Nokogiri::XML(response.body)
+        expect(body.xpath("//message").text).to eq("This is the API session index.")
+      end
     end
 
     context "with missing JWT" do
@@ -48,6 +73,15 @@ RSpec.describe "ApiSessionController", type: :request do
 
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Missing token")
+      end
+
+      it "returns unauthorized with XML" do
+        data = to_xml({ error: "Missing token" }, "error")
+        get session_index_path, params: data, headers: { "CONTENT_TYPE" => "application/xml" }
+
+        expect(response).to have_http_status(:unauthorized)
+        body = Nokogiri::XML(response.body)
+        expect(body.xpath("//error").text).to eq("Missing token")
       end
     end
 
@@ -58,6 +92,14 @@ RSpec.describe "ApiSessionController", type: :request do
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Invalid token")
       end
+
+      it "returns unauthorized with XML" do
+        data = to_xml({ error: "Invalid token" }, "error")
+        get session_index_path, params: data, headers: { "CONTENT_TYPE" => "application/xml", "Authorization": "Bearer invalid.token" }
+        expect(response).to have_http_status(:unauthorized)
+        body = Nokogiri::XML(response.body)
+        expect(body.xpath("//error").text).to eq("Invalid token")
+      end
     end
 
     context "with valid JWT but no matching user" do
@@ -66,6 +108,14 @@ RSpec.describe "ApiSessionController", type: :request do
 
         expect(response).to have_http_status(:unauthorized)
         expect(JSON.parse(response.body)).to include("error" => "Invalid session")
+      end
+
+      it "returns unauthorized with XML" do
+        data = to_xml({ error: "Invalid session" }, "error")
+        get session_index_path, params: data, headers: { "CONTENT_TYPE" => "application/xml", "Authorization" => "Bearer #{bad_token}" }
+        expect(response).to have_http_status(:unauthorized)
+        body = Nokogiri::XML(response.body)
+        expect(body.xpath("//error").text).to eq("Invalid session")
       end
     end
     context 'with an expired token' do

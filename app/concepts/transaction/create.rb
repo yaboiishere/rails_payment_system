@@ -52,12 +52,13 @@ class Transaction::Create < Trailblazer::Operation
     ctx[:response] = {
       uuid: ctx[:model].uuid,
       parent_transaction_uuid: ctx[:model].parent_transaction&.uuid,
-      type: ctx[:model].class.name,
+      type: ctx[:model].class.name.demodulize.downcase,
       amount: ctx[:model].amount,
       status: ctx[:model].status,
       customer_email: ctx[:model].customer_email,
       customer_phone: ctx[:model].customer_phone,
-      merchant_id: ctx[:model].merchant_id
+      merchant_id: ctx[:model].merchant_id,
+      created_at: ctx[:model].created_at
     }
     true
   end

@@ -1,0 +1,284 @@
+openapi: 3.0.3
+info:
+  title: Payment API
+  version: 1.0.0
+  description: |
+    API to create transactions: Authorize, Charge, Refund, Reversal.
+
+servers:
+  - url: https://payment_system.com/
+
+paths:
+  /api/v1/session:
+    post:
+      summary: Create a new session (login)
+      description: Authenticate user and return JWT token.
+      operationId: createSession
+      tags:
+        - Session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+          application/xml:
+            schema:
+              type: object
+              xml:
+                name: session
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: JWT token returned on successful authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: hash
+                properties:
+                  token:
+                    type: string
+        "401":
+          description: Unauthorized - invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: hash
+                properties:
+                  error:
+                    type: string
+  /api/v1/transactions:
+    post:
+      summary: Create a new transaction
+      description: |
+        Create one of the four transaction types: authorize, charge, refund, or reversal.
+      operationId: createTransaction
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AuthorizeRequest"
+                - $ref: "#/components/schemas/ChargeRequest"
+                - $ref: "#/components/schemas/RefundRequest"
+                - $ref: "#/components/schemas/ReversalRequest"
+              discriminator:
+                propertyName: type
+                mapping:
+                  authorize: "#/components/schemas/AuthorizeRequest"
+                  charge: "#/components/schemas/ChargeRequest"
+                  refund: "#/components/schemas/RefundRequest"
+                  reversal: "#/components/schemas/ReversalRequest"
+          application/xml:
+            schema:
+              xml:
+                name: transaction
+              oneOf:
+                - $ref: "#/components/schemas/AuthorizeRequest"
+                - $ref: "#/components/schemas/ChargeRequest"
+                - $ref: "#/components/schemas/RefundRequest"
+                - $ref: "#/components/schemas/ReversalRequest"
+      responses:
+        "201":
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "401":
+          description: Unauthorized
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/XmlValidationError"
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    BaseTransactionRequest:
+      type: object
+      required:
+        - type
+        - customer_email
+        - customer_phone
+      properties:
+        type:
+          type: string
+        customer_email:
+          type: string
+          format: email
+        customer_phone:
+          type: string
+          example: "1234567890"
+        merchant_id:
+          type: integer
+
+    AuthorizeRequest:
+      allOf:
+        - $ref: "#/components/schemas/BaseTransactionRequest"
+        - type: object
+          required:
+            - amount
+          properties:
+            type:
+              enum: [ authorize ]
+            amount:
+              type: number
+              format: float
+
+    ChargeRequest:
+      allOf:
+        - $ref: "#/components/schemas/BaseTransactionRequest"
+        - type: object
+          required:
+            - amount
+            - parent_transaction_uuid
+          properties:
+            type:
+              enum: [ charge ]
+            amount:
+              type: number
+              format: float
+            parent_transaction_uuid:
+              type: string
+              format: uuid
+              description: must be a valid UUID of a authorize transaction
+
+    RefundRequest:
+      allOf:
+        - $ref: "#/components/schemas/BaseTransactionRequest"
+        - type: object
+          required:
+            - amount
+            - parent_transaction_uuid
+          properties:
+            type:
+              enum: [ refund ]
+            amount:
+              type: number
+              format: float
+            parent_transaction_uuid:
+              type: string
+              format: uuid
+              description: must be a valid UUID of a charge transaction
+
+    ReversalRequest:
+      allOf:
+        - $ref: "#/components/schemas/BaseTransactionRequest"
+        - type: object
+          required:
+            - parent_transaction_uuid
+          properties:
+            type:
+              enum: [ reversal ]
+            parent_transaction_uuid:
+              type: string
+              format: uuid
+              description: must be a valid UUID of a authorize transaction
+
+    Transaction:
+      xml:
+        name: hash
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [ authorize, charge, refund, reversal ]
+        status:
+          type: string
+          enum: [ approved, error, refunded, reversed ]
+        amount:
+          type: number
+          nullable: true
+        customer_email:
+          type: string
+        customer_phone:
+          type: string
+        merchant_id:
+          type: integer
+        parent_transaction_uuid:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    XmlValidationError:
+      xml:
+        name: hash
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid amount"
+    ValidationError:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+            example: "Invalid amount"

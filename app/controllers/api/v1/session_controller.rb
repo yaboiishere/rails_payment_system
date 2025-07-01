@@ -3,16 +3,38 @@ class Api::V1::SessionController < Api::BaseController
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_url, alert: "Try again later." }
 
   def create
-    if (user = User.authenticate_by(params.permit(:email, :password)))
+    if (user = User.authenticate_by(session_params))
       jwt = jwt_encode(user.id)
 
-      render json: { token: jwt }, status: :ok
+      if is_xml?
+        render xml: { token: jwt }, status: :ok
+      else
+        render json: { token: jwt }, status: :ok
+      end
     else
-      render json: { error: "Invalid username or password" }, status: :unauthorized
+      if is_xml?
+        render xml: { error: "Invalid username or password" }, status: :unauthorized
+      else
+        render json: { error: "Invalid username or password" }, status: :unauthorized
+      end
     end
   end
 
   def index
-    render json: { message: "This is the API session index." }, status: :ok
+    if is_xml?
+      render xml: { message: "This is the API session index." }, status: :ok
+    else
+      render json: { message: "This is the API session index." }, status: :ok
+    end
+  end
+
+  private
+
+  def session_params
+    if is_xml?
+      params.require(:session).permit(:email, :password)
+    else
+      params.permit(:email, :password)
+    end
   end
 end

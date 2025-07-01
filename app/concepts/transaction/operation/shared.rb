@@ -82,17 +82,26 @@ module Transaction::Operation::Shared
     type = ctx[:tx_type]
     error_text = ctx[:errors]&.join(", ")
 
-    transaction = type.create(
+    transaction = type.new(
+      uuid: SecureRandom.uuid,
       merchant: merchant,
-      parent_transaction: ctx[:parent_transaction],
       amount: params[:amount],
       status: "error",
       customer_email: params[:customer_email],
       customer_phone: params[:customer_phone],
       error_message: error_text
     )
+    begin
+      transaction.parent_transaction = ctx[:parent_transaction]
+    rescue ActiveRecord::AssociationTypeMismatch => e
+      transaction.parent_transaction_id = ctx[:parent_transaction].id
+      Rails.logger.error("Failed to set parent transaction: #{e.message}")
+      ctx[:errors] << "Parent transaction is the wrong type"
+    end
 
     transaction.save(validate: false)
+
+    ctx[:errors] << "Transaction creation failed for #{transaction.uuid}"
 
     ctx[:transaction] = transaction
     false

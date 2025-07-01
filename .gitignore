@@ -9,6 +9,7 @@
 
 # Ignore all environment files.
 /.env*
+!.env.example
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -41,5 +42,3 @@
 .idea/
 
 coverage/
-
-/config/credentials/test.key

@@ -83,8 +83,6 @@ production:
   primary: &primary_production
     <<: *default
     database: payment_system_production
-    username: payment_system
-    password: <%= ENV["PAYMENT_SYSTEM_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
     database: payment_system_production_cache

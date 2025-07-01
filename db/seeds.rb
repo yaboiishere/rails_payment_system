@@ -4,7 +4,7 @@ puts "Seeding users and transactions..."
 
 admin = User::Admin.create!(
   email: "admin@payment.com",
-  password: "password123",
+  password: "Password@123",
   name: "Admin User",
   status: "active"
 )
@@ -14,7 +14,7 @@ puts "Admin created: #{admin.email}"
 3.times do |i|
   merchant = User::Merchant.create!(
     email: "merchant#{i + 1}@payment.com",
-    password: "password123",
+    password: "Password@123",
     status: "active",
     name: "Merchant #{i + 1}",
   )

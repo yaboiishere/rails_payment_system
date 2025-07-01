@@ -4,7 +4,7 @@ FactoryBot.define do
     description { Faker::Lorem.sentence }
     email { Faker::Internet.email }
     status { Faker::Number.between(from: 0, to: 2) ? :active : :inactive }
-    password { 'password' }
+    password { 'Password@123' }
   end
 
   factory :merchant, class: 'User::Merchant', parent: :user do
@@ -23,6 +23,6 @@ FactoryBot.define do
     description { "Administrator" }
     email { "admin@payment.com" }
     status { :active }
-    password { 'password' }
+    password { 'Password@123' }
   end
 end

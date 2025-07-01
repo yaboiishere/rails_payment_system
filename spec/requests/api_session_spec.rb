@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "ApiSessionController", type: :request do
-  let(:user) { create(:user, email: "test@example.com", password: "password") }
+  let(:user) { create(:user, email: "test@example.com", password: "Password@123") }
   let(:jwt_helper) do
     Class.new do
       include ApiSessionHelper

@@ -1,0 +1,3 @@
+email,name,status,type,password
+admin1@example.com,Admin One,active,admin,Password123
+merchant1@example.com,Merchant One,inactive,merchant,Password123

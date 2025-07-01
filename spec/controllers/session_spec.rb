@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe SessionsController, type: :controller do
-  let!(:merchant) { create(:merchant, email: "merchant@example.com", password: "password123") }
+  let!(:merchant) { create(:merchant, email: "merchant@example.com", password: "Password@123") }
 
   describe "GET #new" do
     it "renders the login page" do
@@ -16,7 +16,7 @@ RSpec.describe SessionsController, type: :controller do
   describe "POST #create" do
     context "with valid credentials" do
       it "logs in and redirects to root or return path" do
-        post :create, params: { email: merchant.email, password: "password123" }
+        post :create, params: { email: merchant.email, password: merchant.password }
 
         expect(cookies.signed[:session_id]).to be_present
         expect(response).to redirect_to(root_path)
@@ -25,7 +25,7 @@ RSpec.describe SessionsController, type: :controller do
       it "redirects to return path if session[:return_to_after_authenticating] is set" do
         session[:return_to_after_authenticating] = "/made-up-path"
 
-        post :create, params: { email: merchant.email, password: "password123" }
+        post :create, params: { email: merchant.email, password: merchant.password }
 
         expect(response).to redirect_to("/made-up-path")
       end

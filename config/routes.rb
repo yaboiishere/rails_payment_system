@@ -28,4 +28,9 @@ Rails.application.routes.draw do
       resources :transaction, only: [ :create ]
     end
   end
+
+  if Rails.env.development?
+    require "sidekiq/web"
+    mount Sidekiq::Web => "/sidekiq"
+  end
 end

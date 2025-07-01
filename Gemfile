@@ -54,6 +54,11 @@ gem "actionpack-xml_parser"
 
 gem "csv"
 
+# Background job queue
+gem "sidekiq"
+gem "sidekiq-cron", require: "sidekiq/cron/job"
+gem "redis"
+
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 

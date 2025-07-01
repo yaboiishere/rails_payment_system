@@ -10,7 +10,7 @@ module ApiSessionHelper
     if wrapped_payload["expires_at"].to_i <= Time.now.to_i
       { success?: false, error: "Token has expired" }
     else
-      { success?: true, token: JWT.decode(token, Rails.application.credentials.secret_key_base).first }
+      { success?: true, token: wrapped_payload["payload"] }
     end
   rescue JWT::DecodeError => e
     { success?: false, error: e.message }

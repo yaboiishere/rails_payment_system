@@ -6,21 +6,12 @@ class Api::V1::TransactionController < Api::BaseController
 
     result = Transaction::Create.call(params: transaction_params)
 
-    if result.success?
-      if is_xml?
-        render xml: result[:response], status: :created
-      else
-        render json: result[:response], status: :created
-      end
-
-    else
-      errors = result[:errors] || "Failed to create transaction"
-      if is_xml?
-        render xml: { errors: errors }, status: :unprocessable_entity
-      else
-        render json: { errors: errors }, status: :unprocessable_entity
-      end
-    end
+    render_response(
+      success: result.success?,
+      data: result[:response],
+      errors: { errors: (result[:errors] || "Failed to create transaction") },
+      ok_status: :created,
+      error_status: :unprocessable_entity)
   end
 
   private

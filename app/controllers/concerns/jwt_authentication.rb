@@ -19,11 +19,7 @@ module JwtAuthentication
   def require_jwt
     token = request.headers["Authorization"].to_s.remove("Bearer ").presence
     unless token
-      if is_xml?
-        render xml: { error: "Missing token" }, status: :unauthorized
-      else
-        render json: { error: "Missing token" }, status: :unauthorized
-      end
+      render_response(success: false, errors: { error: "Missing token" }, error_status: :unauthorized)
       return false
     end
 
@@ -32,20 +28,12 @@ module JwtAuthentication
       user_id = payload[:token]
       @current_user = User.find_by(id: user_id)
       unless @current_user
-        if is_xml?
-          render xml: { error: "Invalid session" }, status: :unauthorized
-        else
-          render json: { error: "Invalid session" }, status: :unauthorized
-        end
+        render_response(success: false, errors: { error: "Invalid session" }, error_status: :unauthorized)
         return false
       end
       true
     else
-      if is_xml?
-        render xml: { error: "Invalid token" }, status: :unauthorized
-      else
-        render json: { error: "Invalid token" }, status: :unauthorized
-      end
+      render_response(success: false, errors: { error: "Invalid token" }, error_status: :unauthorized)
       false
     end
   end
@@ -56,11 +44,7 @@ module JwtAuthentication
 
   def verify_merchant(merchant_id)
     unless current_user.id.to_s == merchant_id.to_s
-      if is_xml?
-        render xml: { error: "Unauthorized access" }, status: :forbidden
-      else
-        render json: { error: "Unauthorized access" }, status: :forbidden
-      end
+      render_response(success: false, errors: { error: "Unauthorized access" }, error_status: :forbidden)
       return false
     end
     true

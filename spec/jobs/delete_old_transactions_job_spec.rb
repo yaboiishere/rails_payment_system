@@ -8,8 +8,10 @@ RSpec.describe DeleteOldTransactionsJob, type: :job do
     recent = create(:transaction, created_at: 10.minutes.ago)
 
     expect {
-      described_class.perform_now
-    }.to change(Transaction, :count).by(-1)
+      described_class.perform_async
+    }.to change(described_class.jobs, :size).by(1)
+
+    described_class.drain
 
     expect(Transaction.exists?(recent.id)).to be true
     expect(Transaction.exists?(old.id)).to be false

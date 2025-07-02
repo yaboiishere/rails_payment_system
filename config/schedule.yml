@@ -1,4 +1,4 @@
 delete_old_transactions_job:
-  cron: "0 0/5 * 1/1 * ? *" # every 5 minutes
+  cron: "*/5 * * * *" # every 5th minute
   class: "DeleteOldTransactionsJob"
   queue: default

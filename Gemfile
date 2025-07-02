@@ -59,6 +59,8 @@ gem "sidekiq"
 gem "sidekiq-cron", require: "sidekiq/cron/job"
 gem "redis"
 
+gem "rswag"
+
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
@@ -76,8 +78,6 @@ group :development, :test do
   gem "rails-controller-testing"
   gem "factory_bot_rails"
   gem "faker"
-
-  gem "rswag"
 end
 
 group :development do
@@ -89,6 +89,5 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
-  # gem "webdrivers"
   gem "simplecov", require: false
 end

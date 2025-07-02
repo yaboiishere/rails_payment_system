@@ -4,6 +4,7 @@ class MerchantForm
   include ActiveModel::Model
   include ActiveModel::Attributes
 
+  attribute :name, :string
   attribute :email, :string
   attribute :status, :string
 
@@ -11,6 +12,7 @@ class MerchantForm
 
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :status, inclusion: { in: User::Merchant.statuses.keys }
+  validates :name, presence: true, length: { maximum: 100 }
 
   def initialize(merchant, params = {})
     @merchant = merchant
@@ -20,7 +22,7 @@ class MerchantForm
   def save
     return false unless valid?
 
-    merchant.assign_attributes(email: email, status: status)
+    merchant.assign_attributes(email: email, status: status, name: name)
     merchant.save
   end
 
@@ -29,7 +31,8 @@ class MerchantForm
   def default_attributes
     {
       email: merchant.email,
-      status: merchant.status
+      status: merchant.status,
+      name: merchant.name
     }
   end
 end

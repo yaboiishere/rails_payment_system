@@ -42,6 +42,6 @@ class MerchantController < ApplicationController
   private
 
   def merchant_params
-    params.require(:merchant_form).permit(:email, :status)
+    params.require(:merchant_form).permit(:email, :status, :name)
   end
 end

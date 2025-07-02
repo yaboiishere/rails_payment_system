@@ -200,10 +200,11 @@ RSpec.describe MerchantController, type: :controller do
       it "updates any merchant" do
         sign_in_as(admin)
 
-        patch :update, params: { id: merchant1.id, merchant_form: { email: "new_email@payment.com", status: "active" } }
+        patch :update, params: { id: merchant1.id, merchant_form: { email: "new_email@payment.com", status: "active", name: "new name" } }
         expect(response).to redirect_to(merchant_path(merchant1))
         expect(flash[:notice]).to eq("Merchant updated successfully.")
         expect(merchant1.reload.email).to eq("new_email@payment.com")
+        expect(merchant1.name).to eq("new name")
         expect(merchant1.status).to eq("active")
       end
       it "does not update with invalid data" do
@@ -220,10 +221,11 @@ RSpec.describe MerchantController, type: :controller do
       it "updates their own merchant" do
         sign_in_as(merchant1)
 
-        patch :update, params: { id: merchant1.id, merchant_form: { email: "new_email@payment.com", status: "active" } }
+        patch :update, params: { id: merchant1.id, merchant_form: { email: "new_email@payment.com", status: "active", name: "new name" } }
         expect(response).to redirect_to(merchant_path(merchant1))
         expect(flash[:notice]).to eq("Merchant updated successfully.")
         expect(merchant1.reload.email).to eq("new_email@payment.com")
+        expect(merchant1.name).to eq("new name")
         expect(merchant1.status).to eq("active")
       end
       it "does not update with invalid data" do

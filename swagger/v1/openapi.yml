@@ -273,6 +273,7 @@ components:
         created_at:
           type: string
           format: date-time
+          description: UTC time
 
     XmlValidationError:
       xml:

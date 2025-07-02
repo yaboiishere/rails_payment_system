@@ -7,6 +7,7 @@ class TransactionPresenter
   include ActionView::Helpers::OutputSafetyHelper
   include Rails.application.routes.url_helpers
   include ActionView::Helpers::UrlHelper
+  include LocalTimeHelper
 
   attr_reader :transaction
 
@@ -68,7 +69,7 @@ class TransactionPresenter
   end
 
   def created_at
-    transaction.created_at.strftime("%Y-%m-%d %H:%M")
+    local_time(transaction.created_at)
   end
 
   def parent_uuid_link

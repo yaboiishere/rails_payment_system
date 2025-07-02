@@ -140,20 +140,21 @@ RSpec.describe 'Merchant management', type: :system do
         rows = all('tbody>tr')
         expect(rows.size).to eq(5) # authorize, charge, refund, error_charge, reversal
 
+        # format July 2, 2025 8:35pm
         expect(rows[0])
-          .to have_content("#{reversal.uuid} Reversal - #{reversal.status.capitalize} #{reversal.created_at.strftime('%Y-%m-%d %H:%M') } #{authorize.uuid}")
+          .to have_content("#{reversal.uuid} Reversal - #{reversal.status.capitalize} #{reversal.created_at.strftime("%B%e, %Y %-l:%M%P") } #{authorize.uuid}")
 
         expect(rows[1])
-          .to have_content("#{error_charge.uuid} Charge #{number_to_currency(error_charge.amount)} Error #{error_charge.created_at.strftime('%Y-%m-%d %H:%M')} -")
+          .to have_content("#{error_charge.uuid} Charge #{number_to_currency(error_charge.amount)} Error #{error_charge.created_at.strftime('%B%e, %Y %-l:%M%P')} -")
 
         expect(rows[2])
-          .to have_content("#{refund.uuid} Refund #{number_to_currency(refund.amount)} #{refund.status.capitalize} #{refund.created_at.strftime('%Y-%m-%d %H:%M')} #{charge.uuid}")
+          .to have_content("#{refund.uuid} Refund #{number_to_currency(refund.amount)} #{refund.status.capitalize} #{refund.created_at.strftime('%B%e, %Y %-l:%M%P')} #{charge.uuid}")
 
         expect(rows[3])
-          .to have_content("#{charge.uuid} Charge #{number_to_currency(charge.amount)} #{charge.status.capitalize} #{charge.created_at.strftime('%Y-%m-%d %H:%M')} #{authorize.uuid}")
+          .to have_content("#{charge.uuid} Charge #{number_to_currency(charge.amount)} #{charge.status.capitalize} #{charge.created_at.strftime('%B%e, %Y %-l:%M%P')} #{authorize.uuid}")
 
         expect(rows[4])
-          .to have_content("#{authorize.uuid} Authorize #{number_to_currency(authorize.amount)} #{authorize.status.capitalize} #{authorize.created_at.strftime('%Y-%m-%d %H:%M')} -")
+          .to have_content("#{authorize.uuid} Authorize #{number_to_currency(authorize.amount)} #{authorize.status.capitalize} #{authorize.created_at.strftime('%B%e, %Y %-l:%M%P')} -")
 
         rows[0].click
 

@@ -25,7 +25,7 @@ RSpec.describe MerchantPresenter do
   end
 
   it "returns created at in a readable format" do
-    expect(presenter.created_at).to include(merchant.created_at.strftime("%Y-%m-%d %H:%M"))
+    expect(presenter.created_at).to include(merchant.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"))
   end
 
   it "returns user path link" do

@@ -63,7 +63,7 @@ RSpec.describe TransactionPresenter do
   end
 
   it "returns the transaction's created_at in a readable format" do
-    expect(presenter.created_at).to include(transaction.created_at.strftime("%Y-%m-%d %H:%M"))
+    expect(presenter.created_at).to include(transaction.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"))
   end
 
   it "returns the transaction's customer email" do

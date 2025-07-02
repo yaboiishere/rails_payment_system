@@ -52,6 +52,7 @@ gem "reform-rails", "~> 0.2.0"
 # work with xml
 gem "actionpack-xml_parser"
 
+# Parse CSV files
 gem "csv"
 
 # Background job queue
@@ -59,7 +60,11 @@ gem "sidekiq"
 gem "sidekiq-cron", require: "sidekiq/cron/job"
 gem "redis"
 
+# Swagger API mount
 gem "rswag"
+
+# Display time in user time zone
+gem "local_time"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"

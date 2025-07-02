@@ -7,6 +7,7 @@ class MerchantPresenter
   include ActionView::Helpers::OutputSafetyHelper
   include Rails.application.routes.url_helpers
   include ActionView::Helpers::UrlHelper
+  include LocalTimeHelper
   attr_reader :merchant
 
   def initialize(merchant)
@@ -35,7 +36,7 @@ class MerchantPresenter
   end
 
   def created_at
-    merchant.created_at.strftime("%Y-%m-%d %H:%M")
+    local_time(merchant.created_at)
   end
 
   def link

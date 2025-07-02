@@ -40,10 +40,11 @@ RSpec.describe 'API Transaction', type: :request do
       before do
         @token = create_jwt_token(merchant1)
       end
+      let(:headers) { { 'Authorization' => "Bearer #{@token}", 'Idempotency-Key' => "1" } }
 
       it 'creates the transaction successfully' do
         post transaction_index_path, params: valid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
 
         expect(response).to have_http_status(:created)
         expect(JSON.parse(response.body)).to have_key('uuid')
@@ -53,8 +54,7 @@ RSpec.describe 'API Transaction', type: :request do
       it 'creates the transaction successfully with XML' do
         data = valid_params.to_xml(root: 'transaction')
         post transaction_index_path, params: data,
-             headers: { 'Authorization' => "Bearer #{@token}",
-                        'CONTENT_TYPE' => 'application/xml' }
+             headers: headers.merge({ 'CONTENT_TYPE' => 'application/xml' })
         expect(response).to have_http_status(:created)
         parsed = Hash.from_xml(response.body)
         expect(parsed['hash']['type']).to eq('authorize')
@@ -66,7 +66,7 @@ RSpec.describe 'API Transaction', type: :request do
 
       it 'creates subsequent transaction' do
         post transaction_index_path, params: valid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
         expect(response).to have_http_status(:created)
         parsed_authorize_response = JSON.parse(response.body)
         expect(parsed_authorize_response).to have_key('uuid')
@@ -76,7 +76,7 @@ RSpec.describe 'API Transaction', type: :request do
         auth_uuid = parsed_authorize_response['uuid']
         valid_charge_params[:parent_transaction_uuid] = auth_uuid
         post transaction_index_path, params: valid_charge_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers.merge('Idempotency-Key' => "2")
         expect(response).to have_http_status(:created)
         parsed_charge_response = JSON.parse(response.body)
         expect(parsed_charge_response).to have_key('uuid')
@@ -89,7 +89,7 @@ RSpec.describe 'API Transaction', type: :request do
         charge_uuid = parsed_charge_response['uuid']
         valid_refund_params[:parent_transaction_uuid] = charge_uuid
         post transaction_index_path, params: valid_refund_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers.merge('Idempotency-Key' => "3")
         expect(response).to have_http_status(:created)
         parsed_refund_response = JSON.parse(response.body)
         expect(parsed_refund_response).not_to have_key('id')
@@ -101,7 +101,7 @@ RSpec.describe 'API Transaction', type: :request do
 
         valid_reversal_params[:parent_transaction_uuid] = auth_uuid
         post transaction_index_path, params: valid_reversal_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers.merge('Idempotency-Key' => "4")
         expect(response).to have_http_status(:created)
         parsed_reversal_response = JSON.parse(response.body)
         expect(parsed_reversal_response).not_to have_key('id')
@@ -114,7 +114,7 @@ RSpec.describe 'API Transaction', type: :request do
 
       it 'returns error when parent transaction UUID is the wrong type' do
         post transaction_index_path, params: valid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
         expect(response).to have_http_status(:created)
         parsed_authorize_response = JSON.parse(response.body)
         expect(parsed_authorize_response).to have_key('uuid')
@@ -125,7 +125,7 @@ RSpec.describe 'API Transaction', type: :request do
 
         valid_reversal_params[:parent_transaction_uuid] = auth_uuid
         post transaction_index_path, params: valid_reversal_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers.merge('Idempotency-Key' => "2")
         expect(response).to have_http_status(:created)
         parsed_reversal_response = JSON.parse(response.body)
         expect(parsed_reversal_response).not_to have_key('id')
@@ -135,7 +135,7 @@ RSpec.describe 'API Transaction', type: :request do
         valid_refund_params[:parent_transaction_uuid] = auth_uuid
 
         post transaction_index_path, params: valid_refund_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers.merge('Idempotency-Key' => "3")
         expect(response).to have_http_status(:unprocessable_entity)
         parsed_body = JSON.parse(response.body)
         expect(parsed_body).to have_key('errors')
@@ -146,15 +146,29 @@ RSpec.describe 'API Transaction', type: :request do
         expect(errors[2]).to include("Transaction creation failed for ")
       end
 
+      let(:memory_store) { ActiveSupport::Cache.lookup_store(:memory_store) }
+
+      it 'does not create a new transaction with the same idempotency key' do
+        allow(Rails).to receive(:cache).and_return(memory_store)
+        Rails.cache.clear
+        post transaction_index_path, params: valid_params,
+             headers: headers
+        expect(response).to have_http_status(:created)
+        parsed_response = JSON.parse(response.body)
+
+        post transaction_index_path, params: valid_params,
+             headers: headers
+
+        expect(response).to have_http_status(:created)
+        new_parsed_response = JSON.parse(response.body)
+        expect(parsed_response).to eq(new_parsed_response)
+      end
+
       it 'creates a transaction and returns XML successfully' do
         params = valid_params.to_xml(root: 'transaction')
         post transaction_index_path,
              params: params,
-             headers: {
-               'Authorization' => "Bearer #{@token}",
-               'Content-Type' => 'application/xml',
-               'Accept' => 'application/xml'
-             }
+             headers: headers.merge('CONTENT_TYPE' => 'application/xml')
 
         expect(response).to have_http_status(:created)
         parsed = Hash.from_xml(response.body)
@@ -170,7 +184,7 @@ RSpec.describe 'API Transaction', type: :request do
         invalid_params[:transaction_type] = 'invalid_type'
 
         post transaction_index_path, params: invalid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
         expect(JSON.parse(response.body)).to have_key('errors')
@@ -183,8 +197,7 @@ RSpec.describe 'API Transaction', type: :request do
         data = invalid_params.to_xml(root: 'transaction')
 
         post transaction_index_path, params: data,
-             headers: { 'Authorization' => "Bearer #{@token}",
-                        'CONTENT_TYPE' => 'application/xml' }
+             headers: headers.merge('CONTENT_TYPE' => 'application/xml')
 
         expect(response).to have_http_status(:unprocessable_entity)
         parsed_body = Hash.from_xml(response.body)
@@ -197,7 +210,7 @@ RSpec.describe 'API Transaction', type: :request do
         invalid_params.delete(:amount)
 
         post transaction_index_path, params: invalid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
         parsed_body = JSON.parse(response.body)
@@ -210,7 +223,7 @@ RSpec.describe 'API Transaction', type: :request do
         invalid_params.delete(:merchant_id)
 
         post transaction_index_path, params: invalid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
 
         expect(response).to have_http_status(:forbidden)
         parsed_body = JSON.parse(response.body)
@@ -224,8 +237,7 @@ RSpec.describe 'API Transaction', type: :request do
         data = invalid_params.to_xml(root: 'transaction')
 
         post transaction_index_path, params: data,
-             headers: { 'Authorization' => "Bearer #{@token}",
-                        'CONTENT_TYPE' => 'application/xml' }
+             headers: headers.merge({ 'CONTENT_TYPE' => 'application/xml' })
 
         expect(response).to have_http_status(:forbidden)
         parsed_body = Hash.from_xml(response.body)
@@ -238,10 +250,11 @@ RSpec.describe 'API Transaction', type: :request do
       before do
         @token = create_jwt_token(merchant2)
       end
+      let(:headers) { { 'Authorization' => "Bearer #{@token}", 'Idempotency-Key' => "1" } }
 
       it 'returns forbidden status' do
         post transaction_index_path, params: valid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
 
         expect(response).to have_http_status(:forbidden)
         expect(JSON.parse(response.body)).to have_key('error')
@@ -253,13 +266,14 @@ RSpec.describe 'API Transaction', type: :request do
       before do
         @token = create_jwt_token(merchant1)
       end
+      let(:headers) { { 'Authorization' => "Bearer #{@token}", 'Idempotency-Key' => "1" } }
 
       it 'returns unprocessable entity' do
         invalid_params = valid_params.deep_dup
         invalid_params[:amount] = -100 # Invalid amount
 
         post transaction_index_path, params: invalid_params,
-             headers: { 'Authorization' => "Bearer #{@token}" }
+             headers: headers
 
         expect(response).to have_http_status(:unprocessable_entity)
         expect(JSON.parse(response.body)).to have_key('errors')

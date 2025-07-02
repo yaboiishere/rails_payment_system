@@ -2,16 +2,11 @@
 
 class Api::V1::TransactionController < Api::BaseController
   def create
-    return unless verify_merchant(transaction_params[:merchant_id])
+    check_idempotency do
+      return unless verify_merchant(transaction_params[:merchant_id])
 
-    result = Transaction::Create.call(params: transaction_params)
-
-    render_response(
-      success: result.success?,
-      data: result[:response],
-      errors: { errors: (result[:errors] || "Failed to create transaction") },
-      ok_status: :created,
-      error_status: :unprocessable_entity)
+      Transaction::Create.call(params: transaction_params)
+    end
   end
 
   private

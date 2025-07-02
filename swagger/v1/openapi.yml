@@ -92,6 +92,8 @@ paths:
         - Transactions
       security:
         - bearerAuth: [ ]
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
       requestBody:
         required: true
         content:
@@ -142,6 +144,17 @@ paths:
 
 
 components:
+  parameters:
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: |
+        A unique key provided by the client to ensure idempotent requests. 
+        Required for POST requests.
+      required: true
+      schema:
+        type: string
+
   securitySchemes:
     bearerAuth:
       type: http

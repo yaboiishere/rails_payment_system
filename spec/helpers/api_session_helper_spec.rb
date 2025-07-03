@@ -31,7 +31,7 @@ RSpec.describe ApiSessionHelper, type: :helper do
 
         expect(result[:success?]).to be false
         expect(result[:error]).to be_a(String)
-        expect(result[:error]).to include('Invalid segment encoding')
+        expect(result[:error]).to include('Invalid base64 encoding')
       end
     end
   end

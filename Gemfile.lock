@@ -106,7 +106,7 @@ GEM
       unicode (>= 0.4.4.5)
     cssbundling-rails (1.4.3)
       railties (>= 6.0.0)
-    csv (3.3.2)
+    csv (3.3.5)
     date (3.4.1)
     debug (1.11.0)
       irb (~> 1.10)
@@ -129,7 +129,7 @@ GEM
     factory_bot_rails (6.5.0)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
-    faker (3.5.1)
+    faker (3.5.2)
       i18n (>= 1.8.11, < 2)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
@@ -156,7 +156,7 @@ GEM
     json-schema (5.1.1)
       addressable (~> 2.8)
       bigdecimal (~> 3.1)
-    jwt (2.10.2)
+    jwt (3.1.2)
       base64
     kamal (2.7.0)
       activesupport (>= 7.0)
@@ -364,7 +364,7 @@ GEM
     ruby-progressbar (1.13.0)
     rubyzip (2.4.1)
     securerandom (0.4.1)
-    selenium-webdriver (4.33.0)
+    selenium-webdriver (4.34.0)
       base64 (~> 0.2)
       logger (~> 1.4)
       rexml (~> 3.2, >= 3.2.5)
@@ -501,13 +501,13 @@ DEPENDENCIES
   brakeman
   capybara
   cssbundling-rails
-  csv
+  csv (~> 3.3.5)
   debug
   factory_bot_rails
-  faker
+  faker (~> 3.5.2)
   importmap-rails
   jbuilder
-  jwt (~> 2.5)
+  jwt (~> 3.1.2)
   kamal
   local_time
   pg (~> 1.1)
@@ -520,7 +520,7 @@ DEPENDENCIES
   rspec-rails
   rswag
   rubocop-rails-omakase
-  selenium-webdriver
+  selenium-webdriver (~> 4.34.0)
   sidekiq
   sidekiq-cron
   simplecov

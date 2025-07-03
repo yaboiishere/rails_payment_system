@@ -26,7 +26,7 @@ services:
     build: .
     image: payment_system
     ports:
-      - "4000:80"
+      - "3000:80"
     environment:
       RAILS_ENV: ${RAILS_ENV}
       POSTGRES_USER: ${POSTGRES_USER}

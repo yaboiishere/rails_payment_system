@@ -55,6 +55,8 @@ RUN yarn install --immutable
 # Copy application code
 COPY . .
 
+RUN bundle exec rails stimulus:manifest:update && \
+    yarn run build
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 

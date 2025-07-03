@@ -44,7 +44,20 @@ Make sure you have the following:
 - Rails 8
 - **PostgreSQL** (for the database)
 - **Redis** (optional: for jobs or ActionCable)
+- Yarn (for JavaScript dependencies)
 - Chrome (for Capybara system tests)
+
+### Environment Variables
+
+Create a `.env` file with your database and Redis configurations:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file to set your database credentials, Redis URL and Master Key.
+
+> The Master Key can be found in `config/master.key` or generated with `rails credentials:edit`.
 
 ### 1. Install dependencies
 
@@ -55,7 +68,7 @@ bundle install
 ### 2. Install JavaScript dependencies
 
 ```bash
-yarn install
+yarn
 ```
 
 ### 3. Create and migrate the database
@@ -68,7 +81,12 @@ rails db:setup
 
 ```bash
 bin/dev
-# or
+```
+
+If you want to use rails server directly, you should compile the assets first:
+
+```
+rails assets:precompile
 rails server
 ```
 

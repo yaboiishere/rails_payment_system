@@ -9,4 +9,12 @@ module SystemHelpers
     find('input[name="commit"]').click
     page.has_content?('Logged in as')
   end
+
+  def maybe_confirm
+    begin
+      page.driver.browser.switch_to.alert.accept
+    rescue Selenium::WebDriver::Error::WebDriverError => e
+      puts "No alert to confirm: #{e.message}"
+    end
+  end
 end

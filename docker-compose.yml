@@ -9,12 +9,18 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.5
 
   redis:
     image: redis:7
     restart: always
     ports:
       - "6380:6379"
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.25
 
   web:
     build: .
@@ -31,6 +37,10 @@ services:
     depends_on:
       - postgres
       - redis
+    mem_limit: 1g
+    mem_reservation: 512m
+    cpus: 1.0
+
   sidekiq:
     image: payment_system
     command: bundle exec sidekiq
@@ -43,6 +53,9 @@ services:
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
     depends_on:
       - web
+    mem_limit: 1g
+    mem_reservation: 512m
+    cpus: 0.75 # Bump this up for heavier workloads
 
 volumes:
   pgdata:

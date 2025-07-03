@@ -46,7 +46,7 @@ RSpec.describe 'Merchant management', type: :system do
 
       expect(page).to have_button('Delete')
       click_button 'Delete'
-      page.driver.browser.switch_to.alert.accept
+      maybe_confirm
       expect(page).to have_content('Cannot delete record because dependent transactions exist')
     end
 
@@ -56,7 +56,7 @@ RSpec.describe 'Merchant management', type: :system do
 
       expect(page).to have_button('Delete')
       click_button 'Delete'
-      page.driver.browser.switch_to.alert.accept
+      maybe_confirm
 
       expect(page).to have_current_path(merchant_index_path)
       expect(page).to have_content('Merchant deleted successfully.')

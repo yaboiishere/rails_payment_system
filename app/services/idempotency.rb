@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class Idempotency
-  attr_reader :user, :key, :cache_key, :ttl
+  attr_reader :user, :key, :request_hash, :cache_key, :ttl
 
-  def initialize(user:, key:, ttl: 1.hours)
+  def initialize(user:, key:, request_body:, ttl: 1.hours)
     @user = user
     @key = key
+    @request_hash = Digest::SHA256.hexdigest(request_body.to_s)
     @ttl = ttl
-    @cache_key = "idempotency:#{user.id}:#{key}"
+    @cache_key = "idempotency:#{user.id}:#{key}:#{request_hash}"
   end
 
   def cached?

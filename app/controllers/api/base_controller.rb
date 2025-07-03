@@ -29,7 +29,7 @@ class Api::BaseController < ActionController::API
     key = request.headers["Idempotency-Key"]
     return render_response(success: false, errors: { error: "Idempotency key header is required for this endpoint" }, error_status: :bad_request) unless key
 
-    idempotency = Idempotency.new(user: current_user, key: key)
+    idempotency = Idempotency.new(user: current_user, key: key, request_body: request.raw_post)
 
     if idempotency.cached?
       cached = idempotency.read

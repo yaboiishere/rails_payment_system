@@ -6,7 +6,7 @@ RSpec.describe Idempotency do
   let(:user) { create(:user) }
   let(:key) { SecureRandom.uuid }
   let(:ttl) { 10.minutes }
-  let(:idempotency) { described_class.new(user: user, key: key, ttl: ttl) }
+  let(:idempotency) { described_class.new(user: user, key: key, request_body: "somestring", ttl: ttl) }
 
   let(:response_data) { { message: "OK", data: { value: 42 } } }
   let(:status_code) { 201 }
@@ -20,7 +20,8 @@ RSpec.describe Idempotency do
 
   describe "#cache_key" do
     it "generates a namespaced key using user ID" do
-      expect(idempotency.cache_key).to eq("idempotency:#{user.id}:#{key}")
+      allow(Digest::SHA256).to receive(:hexdigest).and_return("some_string")
+      expect(idempotency.cache_key).to eq("idempotency:#{user.id}:#{key}:some_string")
     end
   end
 

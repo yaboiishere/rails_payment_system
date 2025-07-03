@@ -3,7 +3,6 @@ class Api::V1::SessionController < Api::BaseController
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_url, alert: "Try again later." }
 
   def create
-    # jwt = jwt_encode(user.id) if user = User.authenticate_by(session_params)
     user = User.authenticate_by(session_params)
     jwt = user ? jwt_encode(user.id) : nil
 

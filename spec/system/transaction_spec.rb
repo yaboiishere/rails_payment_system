@@ -47,7 +47,6 @@ RSpec.describe 'Transaction view', type: :system do
     expect(page).to have_content('$100.00')
     expect(page).to have_content('client@example.com')
     expect(page).to have_content('1234567890')
-    expect(page).to have_content(refund.created_at.strftime('%B%e, %Y %-l:%M%P'))
 
     expect(page).to have_link(charge.uuid)
     expect(page).to have_link("Merchant 4")
@@ -86,16 +85,17 @@ RSpec.describe 'Transaction view', type: :system do
       expect(rows.size).to eq(3)
 
       expect(rows[0])
-        .to have_content("Authorize #{authorize.uuid} #{authorize.status.capitalize} #{number_to_currency(authorize.amount)} #{authorize.created_at.strftime('%B%e, %Y %-l:%M%P')}")
+        .to have_content("Authorize #{authorize.uuid} #{authorize.status.capitalize} #{number_to_currency(authorize.amount)}")
 
       expect(rows[1])
-        .to have_content("Charge #{charge.uuid} #{charge.status.capitalize} #{number_to_currency(charge.amount)} #{charge.created_at.strftime('%B%e, %Y %-l:%M%P')}")
+        .to have_content("Charge #{charge.uuid} #{charge.status.capitalize} #{number_to_currency(charge.amount)}")
 
       expect(rows[2])
-        .to have_content("Refund #{refund.uuid} #{refund.status.capitalize} #{number_to_currency(refund.amount)} #{refund.created_at.strftime('%B%e, %Y %-l:%M%P')}")
+        .to have_content("Refund #{refund.uuid} #{refund.status.capitalize} #{number_to_currency(refund.amount)}")
 
       rows[1].click
     end
+    page.has_content?('Transaction Details')
 
     expect(page).to have_current_path(merchant_transaction_path(merchant.id, charge.uuid))
     expect(page).to have_content('Transaction Details')

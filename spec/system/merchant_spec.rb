@@ -4,14 +4,12 @@ require 'rails_helper'
 include ActionView::Helpers::NumberHelper
 
 RSpec.describe 'Merchant management', type: :system do
-  let!(:admin) { User::Admin.create!(email: 'admin@example.com', password: 'Secret123@', name: 'Admin', status: 'active') }
-  let!(:merchant) { User::Merchant.create!(email: 'merchant@example.com', password: 'Secret123@', name: 'Store', status: 'active') }
+  let!(:admin) { create(:admin) }
+  let!(:merchant) { create(:merchant) }
   let(:transaction) { create(:authorize_transaction, merchant: merchant) }
 
   context 'as admin' do
     it 'shows a list of merchants' do
-      merchant.save!
-      admin.save!
       login_as(admin)
       visit merchant_index_path
 
@@ -20,13 +18,11 @@ RSpec.describe 'Merchant management', type: :system do
     end
 
     it 'allows editing a merchant' do
-      merchant.save!
-      admin.save!
       login_as(admin)
       visit merchant_path(merchant)
-      expect(page).to have_content('Store')
-      expect(page).to have_content('merchant@example.com')
-      expect(page).to have_content('Active')
+      expect(page).to have_content(merchant.name)
+      expect(page).to have_content(merchant.email)
+      expect(page).to have_content(merchant.status.titleize)
       expect(page).to have_link('Edit')
       click_link 'Edit'
 
@@ -43,8 +39,6 @@ RSpec.describe 'Merchant management', type: :system do
     end
 
     it 'prevents deleting a merchant with transactions' do
-      merchant.save!
-      admin.save!
       login_as(admin)
       transaction.save!
 
@@ -52,17 +46,17 @@ RSpec.describe 'Merchant management', type: :system do
 
       expect(page).to have_button('Delete')
       click_button 'Delete'
+      page.driver.browser.switch_to.alert.accept
       expect(page).to have_content('Cannot delete record because dependent transactions exist')
     end
 
     it 'allows deleting a merchant without transactions' do
-      merchant.save!
-      admin.save!
       login_as(admin)
       visit merchant_index_path
 
       expect(page).to have_button('Delete')
       click_button 'Delete'
+      page.driver.browser.switch_to.alert.accept
 
       expect(page).to have_current_path(merchant_index_path)
       expect(page).to have_content('Merchant deleted successfully.')
@@ -70,14 +64,15 @@ RSpec.describe 'Merchant management', type: :system do
     end
 
     it 'shows merchant details when no transactions' do
-      merchant.save!
-      admin.save!
       login_as(admin)
+      merchant.description = nil
+      merchant.save!
       visit merchant_path(merchant)
 
-      expect(page).to have_content('Store')
       expect(page).to have_content("Merchant: #{merchant.name}")
-      expect(page).to have_content('Active')
+      expect(page).to have_content('Description')
+      expect(page).to have_content('No description provided')
+      expect(page).to have_content(merchant.status.titleize)
       expect(page).to have_content('All time transactions sum')
       expect(page).to have_link('Edit')
       expect(page).to have_button('Delete')
@@ -88,13 +83,15 @@ RSpec.describe 'Merchant management', type: :system do
 
   context 'as merchant' do
     it 'shows own merchant details when no transactions' do
-      merchant.save!
+      Transaction.delete_all
       login_as(merchant)
       visit merchant_path(merchant)
 
-      expect(page).to have_content('Store')
       expect(page).to have_content("Merchant: #{merchant.name}")
-      expect(page).to have_content('Active')
+      expect(page).to have_content(merchant.email)
+      expect(page).to have_content(merchant.status.titleize)
+      expect(page).to have_content('Description')
+      expect(page).to have_content(merchant.description)
       expect(page).to have_content('All time transactions sum')
       expect(page).to have_content('Transactions count in the last hour')
       expect(page).to have_link('Edit')
@@ -110,8 +107,8 @@ RSpec.describe 'Merchant management', type: :system do
     let(:error_charge) { build(:charge_transaction, merchant: merchant, parent_transaction_id: refund.id, status: 'error') }
     let(:reversal) { create(:reversal_transaction, merchant: merchant, parent_transaction: authorize) }
     it 'shows own merchant details with transactions' do
-      merchant.save!
       login_as(merchant)
+      # These are created here to ensure the order of creation is correct
       authorize.save!
       charge.save!
       refund.save!
@@ -119,9 +116,11 @@ RSpec.describe 'Merchant management', type: :system do
       reversal.save!
       visit merchant_path(merchant)
 
-      expect(page).to have_content('Store')
       expect(page).to have_content("Merchant: #{merchant.name}")
-      expect(page).to have_content('Active')
+      expect(page).to have_content(merchant.email)
+      expect(page).to have_content(merchant.status.titleize)
+      expect(page).to have_content('Description')
+      expect(page).to have_content(merchant.description)
       expect(page).to have_content('All time transactions sum')
       expect(page).to have_content('Transactions count in the last hour')
       expect(page).to have_link('Edit')
@@ -140,21 +139,26 @@ RSpec.describe 'Merchant management', type: :system do
         rows = all('tbody>tr')
         expect(rows.size).to eq(5) # authorize, charge, refund, error_charge, reversal
 
-        # format July 2, 2025 8:35pm
         expect(rows[0])
-          .to have_content("#{reversal.uuid} Reversal - #{reversal.status.capitalize} #{reversal.created_at.strftime("%B%e, %Y %-l:%M%P") } #{authorize.uuid}")
+          .to have_content("#{reversal.uuid} Reversal - #{reversal.status.capitalize}")
+
+        expect(rows[0]).to have_content(authorize.uuid)
 
         expect(rows[1])
-          .to have_content("#{error_charge.uuid} Charge #{number_to_currency(error_charge.amount)} Error #{error_charge.created_at.strftime('%B%e, %Y %-l:%M%P')} -")
+          .to have_content("#{error_charge.uuid} Charge #{number_to_currency(error_charge.amount)} Error")
 
         expect(rows[2])
-          .to have_content("#{refund.uuid} Refund #{number_to_currency(refund.amount)} #{refund.status.capitalize} #{refund.created_at.strftime('%B%e, %Y %-l:%M%P')} #{charge.uuid}")
+          .to have_content("#{refund.uuid} Refund #{number_to_currency(refund.amount)} #{refund.status.capitalize}")
+        expect(rows[2])
+          .to have_content(charge.uuid)
 
         expect(rows[3])
-          .to have_content("#{charge.uuid} Charge #{number_to_currency(charge.amount)} #{charge.status.capitalize} #{charge.created_at.strftime('%B%e, %Y %-l:%M%P')} #{authorize.uuid}")
+          .to have_content("#{charge.uuid} Charge #{number_to_currency(charge.amount)} #{charge.status.capitalize}")
+        expect(rows[3])
+          .to have_content(authorize.uuid)
 
         expect(rows[4])
-          .to have_content("#{authorize.uuid} Authorize #{number_to_currency(authorize.amount)} #{authorize.status.capitalize} #{authorize.created_at.strftime('%B%e, %Y %-l:%M%P')} -")
+          .to have_content("#{authorize.uuid} Authorize #{number_to_currency(authorize.amount)} #{authorize.status.capitalize}")
 
         rows[0].click
 

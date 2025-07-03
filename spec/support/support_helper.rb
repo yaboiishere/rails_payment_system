@@ -7,5 +7,6 @@ module SystemHelpers
     fill_in 'Password', with: user.password
 
     find('input[name="commit"]').click
+    page.has_content?('Logged in as')
   end
 end

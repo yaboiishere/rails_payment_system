@@ -26,6 +26,10 @@ class MerchantPresenter
     mail_to(merchant.email, merchant.email, class: "text-decoration-none")
   end
 
+  def description
+    merchant.description.presence || "No description provided"
+  end
+
   def status_badge
     badge_class = merchant.active? ? "bg-success" : "bg-secondary"
     content_tag(:span, merchant.status.titleize, class: "badge #{badge_class}")
